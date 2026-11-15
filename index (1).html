@@ -1,0 +1,2070 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>DogGame</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#9fd8ff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DogGame">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#9fd8ff;font-family:system-ui,-apple-system,sans-serif;user-select:none;-webkit-user-select:none;touch-action:none}
+canvas{display:block}
+.hidden{display:none !important}
+#top{position:fixed;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:16px;align-items:center;background:rgba(255,255,255,.88);border-radius:14px;padding:8px 18px;font-weight:700;font-size:18px;color:#222;box-shadow:0 2px 0 rgba(0,0,0,.12)}
+.blue{color:#2f7dff}.red{color:#ff4d4d}
+#msg{position:fixed;top:42%;left:50%;transform:translateX(-50%);font-size:22px;font-weight:700;color:#333;background:rgba(255,255,255,.85);padding:8px 16px;border-radius:10px;display:none}
+#joy{position:fixed;left:30px;bottom:30px;width:140px;height:140px;border-radius:50%;background:rgba(0,0,0,.12)}
+#knob{position:absolute;left:42px;top:42px;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.btn{position:fixed;width:84px;height:84px;border-radius:50%;border:none;font-weight:700;font-size:15px;color:#fff;box-shadow:0 4px 0 rgba(0,0,0,.25);cursor:pointer}
+#btnAtk{right:24px;bottom:30px;background:#ff8a3d}
+#btnAb{right:124px;bottom:30px;background:#8a8a8a}
+#btnJump{right:224px;bottom:30px;background:#4cc35a}
+.btn.icon{font-size:38px}
+#wallet{position:fixed;top:12px;right:12px;z-index:50;display:flex;gap:10px}
+.cur{background:rgba(255,255,255,.92);border-radius:14px;padding:6px 12px;text-align:center;font-weight:800;color:#222;box-shadow:0 2px 0 rgba(0,0,0,.12);min-width:90px}
+.cur span{display:block;font-size:20px}
+.cur small{display:block;font-size:20px;line-height:1.1}
+.coin{width:34px;height:34px;margin:2px auto 0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff6a8,#f5c400 55%,#b8860b);border:2px solid #9a6b00;box-shadow:inset 0 -3px 0 rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1}
+#emotes{position:fixed;top:70px;left:50%;transform:translateX(-50%);display:flex;gap:6px;background:rgba(255,255,255,.85);border-radius:14px;padding:6px 8px;z-index:40}
+#emotes button{width:46px;height:46px;border:none;border-radius:12px;background:#fff;font-size:24px;box-shadow:0 2px 0 rgba(0,0,0,.15);cursor:pointer}
+#emotes:empty{display:none}
+.panel-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(255,241,220,.7)}
+.panel{background:#fff;padding:24px;border-radius:18px;text-align:center;min-width:270px;max-width:92vw;max-height:92vh;overflow:auto;box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.panel.wide{max-width:min(900px,95vw)}
+.panel h1{margin:0 0 6px;font-size:30px;color:#222}
+.panel h2{margin:0 0 6px;font-size:22px;color:#222}
+.panel p{color:#555;font-size:14px;line-height:1.5;margin:6px 0}
+#gold,#shopGold{font-weight:700;color:#b8860b;font-size:16px}
+#breeds{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:10px 0}
+.breed{padding:8px 10px;border:2px solid transparent;border-radius:10px;background:#f0f0f0;font-weight:700;color:#222;cursor:pointer}
+.breed.sel{border-color:#2f7dff;background:#dbe9ff}
+#breedInfo{min-height:40px}
+.mode,#replay,#toMenu,#shopBtn,#shopClose{display:block;width:100%;margin:8px 0;padding:14px;font-size:17px;font-weight:700;border:none;border-radius:12px;color:#fff;cursor:pointer}
+.mode{background:#2f7dff}
+#shopBtn{background:#c58a1e}
+#replay{background:#ff8a3d}
+#toMenu,#shopClose{background:#8a8a8a}
+.shopLayout{display:flex;gap:16px;align-items:flex-start;text-align:left}
+.previewBox{flex:0 0 250px;background:linear-gradient(#e6f6ff,#fff);border-radius:14px;padding:8px;text-align:center}
+#previewCanvas{width:240px;height:300px;display:block;margin:0 auto}
+#previewName{font-weight:700;color:#444;font-size:14px;min-height:20px;margin:4px 0}
+#shopList{flex:1;min-width:0;max-height:62vh;overflow:auto;padding-right:4px}
+.item{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #eee;color:#222;font-size:15px;text-align:left;cursor:pointer}
+.item small{color:#777}
+.item button{padding:8px 12px;border:none;border-radius:8px;background:#2f7dff;color:#fff;font-weight:700;cursor:pointer;white-space:nowrap}
+.item button.alt{background:#8a8a8a}
+#shopMsg{min-height:20px;color:#c0392b;font-weight:700}
+.codeRow{display:flex;gap:6px;margin:8px 0}
+.codeRow input{flex:1;min-width:0;padding:10px;border:2px solid #ddd;border-radius:10px;font-size:16px}
+.codeRow button{padding:10px 14px;border:none;border-radius:10px;background:#4cc35a;color:#fff;font-weight:700;cursor:pointer}
+#codeMsg{color:#2f7dff;font-weight:700;min-height:20px}
+@media (max-width:640px){
+  .shopLayout{flex-direction:column;align-items:stretch}
+  .previewBox{flex-basis:auto}
+  #previewCanvas{width:200px;height:250px}
+  #shopList{max-height:40vh}
+}
+.wideBtn{display:block;width:100%;margin:8px 0;padding:14px;font-size:17px;font-weight:700;border:none;border-radius:12px;color:#fff;background:#2f7dff;cursor:pointer}
+.lb{display:block;text-align:left;font-size:13px;color:#777;margin-top:8px}
+#nameIn,#joinCode,#breedSel{width:100%;box-sizing:border-box;padding:10px;border:2px solid #ddd;border-radius:10px;font-size:16px;margin:4px 0}
+.teamBtn{padding:8px 12px;border:none;border-radius:8px;color:#fff;font-weight:700;margin:2px;cursor:pointer}
+.teamBtn[data-team="blue"]{background:#2f7dff}
+.teamBtn[data-team="red"]{background:#ff4d4d}
+.code5{font-size:26px;letter-spacing:4px;color:#222}
+#roster{text-align:left;margin:8px 0;font-size:14px;color:#333}
+#roster div{padding:4px 0;border-bottom:1px solid #eee}
+#lobbyClose,#leaveBtn{display:block;width:100%;margin:8px 0;padding:12px;border:none;border-radius:12px;background:#8a8a8a;color:#fff;font-weight:700;cursor:pointer}
+#startBtn{background:#4cc35a}
+</style>
+</head>
+<body>
+<div id="top"><span class="blue" id="scoreB">0</span><span id="timer">2:00</span><span class="red" id="scoreR">0</span></div>
+<div id="msg"></div>
+<div id="emotes"></div>
+<div id="wallet">
+  <div class="cur"><span id="wGold">0</span><div class="coin">🐾</div></div>
+  <div class="cur"><span id="wGems">0</span><small>💎</small></div>
+</div>
+<div id="joy"><div id="knob"></div></div>
+<button id="btnAb" class="btn icon" title="Yetenek">🐶</button>
+<button id="btnAtk" class="btn icon" title="Saldır">🐾</button>
+<button id="btnJump" class="btn icon" title="Zıpla">⬆️</button>
+
+<div id="menu" class="panel-wrap">
+  <div class="panel">
+    <h1>DogGame</h1>
+    <p id="gold">Altın: 0</p>
+    <p>Köpeğini seç:</p>
+    <div id="breeds"></div>
+    <p id="breedInfo"></p>
+    <button class="mode" data-mode="3v3">3 vs 3</button>
+    <button class="mode" data-mode="1v1">Test: 1 vs bot</button>
+    <div class="codeRow"><input id="codeIn" placeholder="Kod gir" autocomplete="off"><button id="codeBtn">Kullan</button></div>
+    <p id="codeMsg"></p>
+    <button class="wideBtn" id="onlineBtn" style="background:#4cc35a">Online oyna</button>
+    <button id="shopBtn">Mağaza</button>
+    <p>Mobil: joystick, Saldır, Yetenek, Zıpla. Masaüstü: WASD, Boşluk (yetenek), Sol Shift (zıpla), sol tık (saldır).</p>
+  </div>
+</div>
+
+<div id="shop" class="panel-wrap hidden">
+  <div class="panel wide">
+    <h2>Mağaza</h2>
+    <p id="shopGold"></p>
+    <div class="shopLayout">
+      <div class="previewBox">
+        <canvas id="previewCanvas"></canvas>
+        <p id="previewName"></p>
+      </div>
+      <div id="shopList"></div>
+    </div>
+    <p id="shopMsg"></p>
+    <button id="shopClose">Geri</button>
+  </div>
+</div>
+
+<div id="lobby" class="panel-wrap hidden">
+  <div class="panel">
+    <h2>Online oyun</h2>
+    <div id="lobbyStart">
+      <label class="lb" for="nameIn">Adın</label>
+      <input id="nameIn" maxlength="16" placeholder="Adın">
+      <button class="wideBtn" id="createBtn">Oda oluştur</button>
+      <label class="lb" for="joinCode">Davet kodu ile katıl</label>
+      <div class="codeRow"><input id="joinCode" maxlength="5" placeholder="Kod" autocomplete="off"><button id="joinBtn">Katıl</button></div>
+    </div>
+    <div id="lobbyRoom" class="hidden">
+      <p>Davet kodu: <b id="roomCode" class="code5"></b></p>
+      <p>Takımın:
+        <button class="teamBtn" data-team="blue">Mavi</button>
+        <button class="teamBtn" data-team="red">Kırmızı</button>
+      </p>
+      <label class="lb" for="breedSel">Köpeğin</label>
+      <select id="breedSel"></select>
+      <div id="roster"></div>
+      <button class="wideBtn" id="startBtn">Maçı başlat</button>
+      <p id="lobbyMsg"></p>
+      <button id="leaveBtn">Odadan ayrıl</button>
+    </div>
+    <button id="lobbyClose">Geri</button>
+  </div>
+</div>
+
+<div id="end" class="panel-wrap hidden">
+  <div class="panel">
+    <h2 id="endText"></h2>
+    <button id="replay">Tekrar oyna</button>
+    <button id="toMenu">Menü</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const TEAM = { blue: 0x2f7dff, red: 0xff4d4d };
+const AX = 120, AZ = 80, SPEED = 10, MATCH_TIME = 120, WIN_SCORE = 15, WIN_GOLD = 1000;
+const BOT_FACTOR = 0.6;
+const GEM_PER_MATCH = 5;
+const ZERO = new THREE.Vector3();
+
+// ---------- Online durum ve tohumlu rastgelelik ----------
+let online = false, isHost = true, myId = 'local', hostId = 'local', netId = null;
+const netBase = 'api/';
+// Aynı tohumdan aynı harita: tüm oyuncularda engeller ve sandıklar aynı yerde olur
+function mulberry(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+// ---------- Kayıt (altın ve envanter) ----------
+const SAVE_KEY = 'doggame_save_v1';
+let save = { gold: 0, gems: 0, owned: [], equip: { hat: null, outfit: null, face: null, acc: null } };
+try {
+  const s = JSON.parse(localStorage.getItem(SAVE_KEY));
+  if (s) save = Object.assign(save, s);
+} catch (e) {}
+save.equip = Object.assign({ hat: null, outfit: null, face: null, acc: null, trail: null, fur: null, ribbon: null }, save.equip);
+if (typeof save.gems !== 'number') save.gems = 0;
+save.codes = Array.isArray(save.codes) ? save.codes : [];
+function persist() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {}
+}
+
+// ---------- Mağaza ----------
+const SHOP = [
+  { id: 'sun', type: 'face', name: 'Güneş gözlüğü', price: 300, color: 0x111111, icon: '😎', desc: 'Havalı siyah güneş gözlüğü.' },
+  { id: 'glasses', type: 'face', name: 'Yuvarlak gözlük', price: 200, color: 0x8B5A2B, icon: '🤓', desc: 'Klasik yuvarlak çerçeveli gözlük.' },
+  { id: 'patch', type: 'face', name: 'Korsan göz bandı', price: 500, color: 0x222222, icon: '🏴‍☠️', desc: 'Bir gözü kapatan korsan bandı.' },
+  { id: 'headphones', type: 'acc', name: 'Kulaklık', price: 700, color: 0xE63946, icon: '🎧', desc: 'Başına takılan kırmızı kulaklık.' },
+  { id: 'bowtie', type: 'acc', name: 'Papyon', price: 400, color: 0x2A2A7A, icon: '🎀', desc: 'Boynuna takılan lacivert papyon.' },
+  { id: 'medal', type: 'acc', name: 'Altın madalya', price: 1100, color: 0xFFC93C, icon: '🏅', desc: 'Göğsüne asılı kırmızı şeritli madalya.' },
+  { id: 'beanie', type: 'hat', name: 'Mavi bere', price: 300, color: 0x2f7dff, icon: '🧶', desc: 'Sıcacık mavi bere. Kışın vazgeçilmezi.' },
+  { id: 'flower', type: 'hat', name: 'Çiçek tacı', price: 450, color: 0xFF8FB1, icon: '🌸', desc: 'Pembe çiçeklerden örülmüş taç.' },
+  { id: 'cap', type: 'hat', name: 'Kırmızı şapka', price: 500, color: 0xD7263D, icon: '🧢', desc: 'Siperli beyzbol şapkası, güneşten korur.' },
+  { id: 'party', type: 'hat', name: 'Parti şapkası', price: 600, color: 0xff6fb5, icon: '🥳', desc: 'Kutlama zamanı! Ponpon dahil.' },
+  { id: 'cowboy', type: 'hat', name: 'Kovboy şapkası', price: 700, color: 0x8B5A2B, icon: '🤠', desc: 'Vahşi batının geniş kenarlı şapkası.' },
+  { id: 'horns', type: 'hat', name: 'Şeytan boynuzu', price: 800, color: 0xB00020, icon: '😈', desc: 'Şeytani görünüm, rakipleri ürkütür.' },
+  { id: 'viking', type: 'hat', name: 'Viking miğferi', price: 1200, color: 0x9AA3AE, icon: '🛡️', desc: 'Bronz boynuzlu, gerçek bir savaşçı miğferi.' },
+  { id: 'crown', type: 'hat', name: 'Altın taç', price: 1000, color: 0xFFC93C, icon: '👑', desc: 'Kral olduğunu herkese gösterir.' },
+  { id: 'halo', type: 'hat', name: 'Melek halesi', price: 1500, color: 0xFFD34D, icon: '😇', desc: 'Başının üstünde parlayan halka. Sadece en iyiler için.' },
+  { id: 'bandana', type: 'outfit', name: 'Mavi bandana', price: 250, color: 0x2f7dff, icon: '🎗️', desc: 'Boynunda sarkan mavi bir bandana.' },
+  { id: 'collar', type: 'outfit', name: 'Çivili tasma', price: 350, color: 0x777777, icon: '🔗', desc: 'Metal çivili, sert bir tasma.' },
+  { id: 'scarf', type: 'outfit', name: 'Kırmızı atkı', price: 400, color: 0xD7263D, icon: '🧣', desc: 'İki kat sarılan yumuşak kırmızı atkı.' },
+  { id: 'backpack', type: 'outfit', name: 'Sırt çantası', price: 600, color: 0xD94F00, icon: '🎒', desc: 'Ön cepli, turuncu sırt çantası.' },
+  { id: 'vest', type: 'outfit', name: 'Yeşil yelek', price: 700, color: 0x3E9B3E, icon: '🦺', desc: 'Cepli, yeşil bir yelek.' },
+  { id: 'jacket', type: 'outfit', name: 'Kot ceket', price: 800, color: 0x1E3A8A, icon: '🧥', desc: 'Fermuarlı lacivert kot ceket, kollu.' },
+  { id: 'cape', type: 'outfit', name: 'Mor pelerin', price: 900, color: 0x8E44AD, icon: '🦸', desc: 'Rüzgarda dalgalanan mor pelerin.' },
+  { id: 'astronaut', type: 'outfit', name: 'Uzay kaskı', price: 1300, color: 0xEEEEEE, icon: '🧑‍🚀', desc: 'Mavi camlı visörlü uzay kaskı. Oksijen bol.' }
+];
+// Aksesuarlar elmasla, kıyafet/şapkalar altınla satılır
+const GEM_PRICES = { sun: 8, glasses: 5, patch: 12, headphones: 15, bowtie: 6, medal: 25 };
+SHOP.forEach(i => { if (GEM_PRICES[i.id]) { i.cur = 'gem'; i.price = GEM_PRICES[i.id]; } else i.cur = 'gold'; });
+SHOP.push({ id: 'trail', type: 'trail', name: 'Pati izi', price: 20, cur: 'gem', color: 0x7A4A24, icon: '🐾', desc: 'Yürürken arkanda pati izi bırakır.' });
+const EMOTES = [
+  { id: 'e_laugh', emoji: '😂' }, { id: 'e_angry', emoji: '😡' }, { id: 'e_cry', emoji: '😭' },
+  { id: 'e_thumb', emoji: '👍' }, { id: 'e_fire', emoji: '🔥' }, { id: 'e_skull', emoji: '💀' }
+];
+EMOTES.forEach(e => SHOP.push({ id: e.id, type: 'emote', name: e.emoji + ' emoji', price: 150, cur: 'gold', icon: e.emoji, desc: 'Savaşta bu emojiyi gösterebilirsin.' }));
+// Gizli kodlar: her kod bir kez kullanılabilir
+SHOP.push({ id: 'dealwithit', type: 'face', name: 'Deal with it gözlüğü', price: 0, cur: 'gem', secret: true, color: 0x111111, icon: '😎', desc: 'Kodla kazanılan efsanevi gözlük.' });
+const CODES = {
+  harzem1903: { gems: 25, label: '25 elmas' },
+  havhav: { gold: 1500, gems: 15, label: '1500 altın ve 15 elmas' },
+  op: { items: ['rainbowfur', 'turkeyhat', 'rainbowtrail', 'rainbowribbon'], label: 'Gökkuşağı kürk, Türkiye şapkası ve gökkuşağı pati izi' },
+  dealwithit: { item: 'dealwithit', label: 'Deal with it gözlüğü' }
+};
+// Yönetim kodu (DG-...): yönetim sayfasında üretilir, ödülü içinde taşır
+function redeemPack(code) {
+  let p;
+  try { p = JSON.parse(atob(code.slice(3))); } catch (e) { return 'Geçersiz kod'; }
+  if (!p || typeof p.id !== 'string') return 'Geçersiz kod';
+  if (save.codes.includes(p.id)) return 'Bu kod zaten kullanıldı';
+  save.codes.push(p.id);
+  if (p.g) save.gold += Number(p.g) || 0;
+  if (p.e) save.gems += Number(p.e) || 0;
+  if (p.i && ITEM[p.i] && !save.owned.includes(p.i)) save.owned.push(p.i);
+  persist();
+  updateMenu();
+  return 'Kazanıldı!';
+}
+function redeem(raw) {
+  if (raw.trim().startsWith('DG-')) return redeemPack(raw.trim());
+  const key = raw.trim().toLowerCase();
+  const c = CODES[key];
+  if (!c) return 'Geçersiz kod';
+  if (save.codes.includes(key)) return 'Bu kod zaten kullanıldı';
+  save.codes.push(key);
+  if (c.gold) save.gold += c.gold;
+  if (c.gems) save.gems += c.gems;
+  for (const it of (c.items || [c.item])) if (it && !save.owned.includes(it)) save.owned.push(it);
+  persist();
+  updateMenu();
+  return `Kazanıldı: ${c.label}`;
+}
+$('codeBtn').addEventListener('click', () => {
+  $('codeMsg').textContent = redeem($('codeIn').value);
+  $('codeIn').value = '';
+});
+
+// Sadece kodla alınan özel eşyalar
+SHOP.push({ id: 'rainbowfur', type: 'fur', name: 'Gökkuşağı kürk', price: 0, cur: 'gem', secret: true, color: 0xff6fb5, icon: '🌈', desc: 'Kürkün gökkuşağı renklerinde yanıar.' });
+SHOP.push({ id: 'turkeyhat', type: 'hat', name: 'Türkiye şapkası', price: 0, cur: 'gem', secret: true, color: 0xE30A17, icon: '🇹🇷', desc: 'Ay yıldızlı Türk bayrağı şapkası.' });
+SHOP.push({ id: 'rainbowtrail', type: 'trail', name: 'Gökkuşağı pati izi', price: 0, cur: 'gem', secret: true, color: 0xff6fb5, icon: '🌈', desc: 'Her iz gökkuşağı renginde yanıar.' });
+SHOP.push({ id: 'rainbowribbon', type: 'ribbon', name: 'Gökkuşağı iz', price: 0, cur: 'gem', secret: true, color: 0xff6fb5, icon: '🌈', desc: 'Köpeğin arkasından gökkuşağı renkli bir iz çıkar.' });
+const ITEM = Object.fromEntries(SHOP.map(i => [i.id, i]));
+let tryOn = null; // mağazada denenen eşya (köpek önizlemesinde takılır)
+
+// ---------- Köpek ırkları: görünüm, istatistik ve özel yetenek ----------
+const BREEDS = {
+  shiba:     { name: 'Shiba',     fur: 0xE7A564, cream: 0xFFF4E3, leg: 0xC98244, len: 1.3,  legL: 1.0, head: 1.0,  ears: 'up',     hp: 6000, atk: 550, ab: 4000, spd: 1.0,  abil: 'Hızlı atılma', desc: 'Yönüne hızla atılır ve geçtiği düşmanlara vurur.' },
+  husky:     { name: 'Husky',     fur: 0x9AA3AE, cream: 0xFFFFFF, leg: 0x6E7782, len: 1.35, legL: 1.0, head: 1.05, ears: 'tall',   hp: 6000, atk: 650, ab: 3500, spd: 1.0,  abil: 'Uluma', desc: 'Yakındaki düşmanları sersemletir ve hasar verir.' },
+  corgi:     { name: 'Corgi',     fur: 0xD9893F, cream: 0xFFF4E3, leg: 0xB06A2A, len: 1.6,  legL: 0.6, head: 1.05, ears: 'tall',   hp: 5500, atk: 500, ab: 4000, spd: 1.15, abil: 'Sıçrama', desc: 'Yukarı sıçrar, inişte çevresine hasar verir.' },
+  dachshund: { name: 'Dachshund', fur: 0x8B5A2B, cream: 0xE8C9A0, leg: 0x6B4220, len: 1.9,  legL: 0.6, head: 0.95, ears: 'floppy', hp: 7000, atk: 500, ab: 3500, spd: 0.9,  abil: 'Kazma', desc: 'Kısa süre kalkan ve hız kazanır.' },
+  golden:    { name: 'Golden',    fur: 0xE8B84A, cream: 0xFFF0C0, leg: 0xC9962F, len: 1.3,  legL: 1.0, head: 1.0,  ears: 'floppy', hp: 6500, atk: 550, ab: 4000, spd: 1.0,  abil: 'Şifa', desc: 'Canının bir kısmını anında yeniler.' },
+  pug:       { name: 'Pug',       fur: 0xC8A878, cream: 0x3A2A1E, leg: 0xA8895A, len: 1.1,  legL: 0.9, head: 0.9,  ears: 'floppy', hp: 6000, atk: 450, ab: 4500, spd: 0.95, abil: 'Çığlık', desc: 'Çevredeki düşmanları kısa süre sersemletir.' },
+  bulldog:   { name: 'Bulldog',   fur: 0xE9C8A0, cream: 0xFFFFFF, leg: 0xC89A72, len: 0.95, legL: 0.65, head: 1.2,  ears: 'floppy', hp: 7500, atk: 600, ab: 3800, spd: 0.85, abil: 'Kafa çarpması', desc: 'Yakındaki düşmanlara kafasıyla çarpar, sersemletir.' },
+  beagle:    { name: 'Beagle',    fur: 0xA8672F, cream: 0xFFF8EE, leg: 0x6B4220, len: 1.25, legL: 0.95, head: 1.0,  ears: 'floppy', hp: 6000, atk: 520, ab: 4000, spd: 1.1,  abil: 'Koku takibi', desc: 'Kısa süre hızlanır ve biraz can yeniler.' },
+  poodle:    { name: 'Poodle',    fur: 0xF5F5F5, cream: 0xFFFFFF, leg: 0xDADADA, len: 1.15, legL: 1.2,  head: 1.0,  ears: 'floppy', hp: 5800, atk: 520, ab: 4200, spd: 1.05, abil: 'Kabarık kalkan', desc: 'Kısa süre kalkan açar ve yakındakileri iter.' },
+  doberman:  { name: 'Doberman',  fur: 0x2B2B2B, cream: 0x8A5A2B, leg: 0x1A1A1A, len: 1.45, legL: 1.15, head: 1.05, ears: 'tall',   hp: 6200, atk: 630, ab: 3600, spd: 1.1,  abil: 'Hücum', desc: 'Kısa mesafede hızla atılır ve çarpar.' }
+};
+let selectedBreed = 'shiba';
+
+// ---------- Renderer, sahne, kamera ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+document.body.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x9fd8ff);
+const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 600);
+scene.add(new THREE.HemisphereLight(0xffffff, 0xe8c9a0, 1.0));
+const sun = new THREE.DirectionalLight(0xffffff, 0.7);
+sun.position.set(8, 20, 6);
+scene.add(sun);
+
+const toon = c => new THREE.MeshToonMaterial({ color: c });
+const toonD = c => new THREE.MeshToonMaterial({ color: c, side: THREE.DoubleSide });
+const metal = (c, r = 0.35) => new THREE.MeshStandardMaterial({ color: c, metalness: 0.7, roughness: r, side: THREE.DoubleSide });
+const shade = (hex, k) => new THREE.Color(hex).multiplyScalar(k).getHex();
+const lathe = (pts, mat) => {
+  mat.side = THREE.DoubleSide;
+  return new THREE.Mesh(new THREE.LatheGeometry(pts.map(p => new THREE.Vector2(p[0], p[1])), 28), mat);
+};
+const mats = { dark: toon(0x2A1A0E), energy: toon(0xffd34d), heal: toon(0x4cc35a) };
+
+// Boyun halkası için düzlem normali (boyun yaklaşık bu yönde uzanır)
+const NECK_N = new THREE.Vector3(0, 0.95, 0.3).normalize();
+function neckRing(radius, tube, mat, y, z) {
+  const t = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 10, 32), mat);
+  t.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), NECK_N);
+  t.position.set(0, y, z);
+  return t;
+}
+
+// ---------- Minecraft tarzı blok zemin ----------
+{
+  const cols = AX, rows = AZ, count = cols * rows;
+  const tiles = new THREE.InstancedMesh(new THREE.BoxGeometry(2, 0.4, 2), new THREE.MeshToonMaterial({ color: 0xffffff }), count);
+  const m = new THREE.Matrix4(), c = new THREE.Color();
+  const grass = [0x7EC850, 0x72BA46, 0x8BD15A];
+  let i = 0;
+  for (let zi = 0; zi < rows; zi++) {
+    for (let xi = 0; xi < cols; xi++) {
+      m.makeTranslation(-AX + xi * 2 + 1, -0.2, -AZ + zi * 2 + 1);
+      tiles.setMatrixAt(i, m);
+      c.setHex(Math.random() < 0.15 ? 0x8B5A2B : grass[Math.floor(Math.random() * grass.length)]);
+      tiles.setColorAt(i, c);
+      i++;
+    }
+  }
+  tiles.instanceMatrix.needsUpdate = true;
+  tiles.instanceColor.needsUpdate = true;
+  scene.add(tiles);
+}
+
+// ---------- Engeller: sandık (üstüne çıkılır), ağaç, su, kırılabilir sandık ----------
+const obstacles = [];
+const chests = [];
+
+function addCrate(x, z) {
+  const w = 2, d = 2, h = 1.6;
+  const mat = toon(0xD9A36B);
+  mat.transparent = true;
+  const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+  m.position.set(x, h / 2, z);
+  scene.add(m);
+  obstacles.push({ x, z, hw: w / 2, hd: d / 2, h, top: h, standable: true, mesh: m });
+}
+
+function addPond(cx, cz, w, d) {
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, 0.3, d), toon(0x3d9bff));
+  mesh.position.set(cx, -0.1, cz);
+  scene.add(mesh);
+  obstacles.push({ x: cx, z: cz, hw: w / 2, hd: d / 2, h: 0, top: 0, water: true, mesh });
+}
+
+function addTree(x, z) {
+  const trunk = new THREE.Mesh(new THREE.BoxGeometry(0.6, 1.6, 0.6), toon(0x7A4E2D));
+  trunk.position.set(x, 0.8, z);
+  scene.add(trunk);
+  const leaves = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.4, 2.2), toon(0x3E9B3E));
+  leaves.position.set(x, 2.3, z);
+  scene.add(leaves);
+  const top = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.8, 1.4), toon(0x3E9B3E));
+  top.position.set(x, 3.4, z);
+  scene.add(top);
+  obstacles.push({ x, z, hw: 0.3, hd: 0.3, h: 0, top: 99, mesh: trunk });
+}
+
+// Kırılabilir sandık: yürünmez, kendi başına saldırmaz; kırılınca tam can küpü bırakır
+function addChest(x, z) {
+  const group = new THREE.Group();
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 1.8), toon(0xB5773A));
+  body.position.y = 0.7;
+  group.add(body);
+  const band = new THREE.Mesh(new THREE.BoxGeometry(1.84, 0.25, 1.84), toon(0xFFC93C));
+  band.position.y = 0.9;
+  group.add(band);
+  group.position.set(x, 0, z);
+  scene.add(group);
+  const bar = makeBar('red', false);
+  bar.fill.material.color.setHex(0xFFC93C);
+  const o = { x, z, hw: 0.9, hd: 0.9, h: 0, top: 99, chest: true, hp: 3000, maxHp: 3000, mesh: group, bar };
+  obstacles.push(o);
+  chests.push(o);
+}
+
+function hitChest(o, amt) {
+  if (online && !isHost) { sendNet('chest', { i: chests.indexOf(o), amt }, hostId); return; }
+  o.hp -= amt;
+  if (o.hp <= 0) {
+    o.hp = 0;
+    o.top = -10;
+    o.mesh.visible = false;
+    const mesh = new THREE.Mesh(new THREE.SphereGeometry(0.8, 14, 10), mats.heal);
+    mesh.position.set(o.x, 0.7, o.z);
+    scene.add(mesh);
+    pickups.push({ type: 'heal', full: true, mesh, active: true, x: o.x, z: o.z, t: 0 });
+  }
+}
+
+function resetChests() {
+  for (const o of chests) {
+    o.hp = o.maxHp;
+    o.top = 99;
+    o.mesh.visible = true;
+  }
+}
+
+let worldMeshes = [];
+function blocked(x, z, pad) {
+  return obstacles.some(o => Math.abs(x - o.x) < o.hw + pad && Math.abs(z - o.z) < o.hd + pad);
+}
+// Engeller ve sandıklar verilen tohumdan üretilir (Math.random geçici olarak tohumlu üretece bağlanır)
+function buildWorld(seed) {
+  for (const m of worldMeshes) scene.remove(m);
+  worldMeshes = [];
+  obstacles.length = 0;
+  chests.length = 0;
+  const before = new Set(scene.children);
+  const realRandom = Math.random;
+  Math.random = mulberry(seed);
+  try {
+[[-10, -7], [-10, 7], [10, -7], [10, 7], [-4, 0], [4, 0]].forEach(([x, z]) => addCrate(x, z));
+addPond(-12, -8, 10, 7);
+addPond(12, 8, 10, 7);
+[[-12, -2], [12, 4], [-2, 9], [7, -10], [-14, -9]].forEach(([x, z]) => addTree(x, z));
+
+function blocked(x, z, pad) {
+  return obstacles.some(o => Math.abs(x - o.x) < o.hw + pad && Math.abs(z - o.z) < o.hd + pad);
+}
+
+// Rastgele engeller; açık araziler boş kalır
+{
+  const OPEN = [[0, 0, 25], [-60, 30, 20], [60, -30, 20]];
+  let placed = 0, tries = 0;
+  while (placed < 400 && tries < 20000) {
+    tries++;
+    const x = (Math.random() * 2 - 1) * 90, z = (Math.random() * 2 - 1) * 60;
+    if (blocked(x, z, 2.5)) continue;
+    if (OPEN.some(([cx, cz, r]) => Math.hypot(x - cx, z - cz) < r)) continue;
+    const r = Math.random();
+    if (r < 0.2) addTree(x, z);
+    else if (r < 0.5) addCrate(x, z);
+    else addPond(x, z, 7 + Math.random() * 6, 5 + Math.random() * 5);
+    placed++;
+  }
+}
+
+// Haritaya sandıklar
+{
+  let placed = 0, tries = 0;
+  while (placed < 45 && tries < 20000) {
+    tries++;
+    const x = (Math.random() * 2 - 1) * 90, z = (Math.random() * 2 - 1) * 60;
+    if (blocked(x, z, 2.5)) continue;
+    addChest(x, z);
+    placed++;
+  }
+}
+  } finally {
+    Math.random = realRandom;
+  }
+  worldMeshes = scene.children.filter(m => !before.has(m));
+}
+
+function collide(p, r, y) {
+  p.x = Math.max(-AX + 1, Math.min(AX - 1, p.x));
+  p.z = Math.max(-AZ + 1, Math.min(AZ - 1, p.z));
+  for (const o of obstacles) {
+    if (o.water || y >= o.top - 0.1) continue;
+    const cx = Math.max(o.x - o.hw, Math.min(p.x, o.x + o.hw));
+    const cz = Math.max(o.z - o.hd, Math.min(p.z, o.z + o.hd));
+    const dx = p.x - cx, dz = p.z - cz;
+    const dist = Math.hypot(dx, dz);
+    if (dist < r) {
+      if (dist > 1e-6) { p.x += dx / dist * (r - dist); p.z += dz / dist * (r - dist); }
+      else { p.x += r; }
+    }
+  }
+}
+
+// Sandığın üstündeki yükseklik
+function groundAt(f) {
+  let g = 0;
+  for (const o of obstacles) {
+    if (o.water || !o.standable) continue;
+    if (Math.abs(f.pos.x - o.x) < o.hw && Math.abs(f.pos.z - o.z) < o.hd) g = Math.max(g, o.top);
+  }
+  return g;
+}
+
+function inWater(f) {
+  return obstacles.some(o => o.water && Math.abs(f.pos.x - o.x) < o.hw && Math.abs(f.pos.z - o.z) < o.hd);
+}
+
+// ---------- Köpek modeli (ırka göre) ----------
+// root: konum/yön, model: dönüş (yetenek) ve zıplama, legs: her bacak kendi mafsalında
+function buildDog(teamHex, b) {
+  const root = new THREE.Group();
+  root.rotation.order = 'YXZ';
+  const g = new THREE.Group();
+  root.add(g);
+  const fur = toon(b.fur), cream = toon(b.cream), leg = toon(b.leg);
+  const S = r => new THREE.SphereGeometry(r, 18, 12);
+  const put = (geo, mat, x, y, z, sx = 1, sy = 1, sz = 1, parent = g) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    m.scale.set(sx, sy, sz);
+    parent.add(m);
+    return m;
+  };
+
+  const H = 0.85 * b.legL;   // bacak boyu
+  const dy = H - 0.85;       // gövde ve kafa yükseklik farkı
+
+  const body = put(S(1), fur, 0, 1.1 + dy, 0, 0.85, 0.75, b.len);
+  put(S(0.5), cream, 0, 1.05 + dy, 0.73 * b.len, 1, 0.9, 0.8);
+
+  const legs = [];
+  for (const [x, s] of [[-0.38, 1], [0.38, 1], [-0.38, -1], [0.38, -1]]) {
+    const z = s * 0.58 * b.len;
+    const pivot = new THREE.Group();
+    pivot.position.set(x, H, z);
+    g.add(pivot);
+    put(new THREE.CylinderGeometry(0.15, 0.13, H, 12), leg, 0, -H / 2, 0, 1, 1, 1, pivot);
+    put(S(0.17), cream, 0, -H + 0.12, 0.05, 1, 0.6, 1.3, pivot);
+    legs.push({ pivot, front: s > 0, side: x < 0 ? -1 : 1 });
+  }
+
+  const head = new THREE.Group();
+  head.position.set(0, 1.8 + dy, 0.77 * b.len);
+  head.scale.setScalar(b.head);
+  g.add(head);
+  put(S(0.62), fur, 0, 0, 0, 1, 1, 1, head);
+  for (const s of [-1, 1]) {
+    if (b.ears === 'floppy') {
+      const ear = put(new THREE.ConeGeometry(0.2, 0.55, 10), fur, s * 0.45, 0.2, -0.02, 1, 1, 1, head);
+      ear.rotation.z = -s * (Math.PI - 0.5);
+    } else {
+      const hgt = b.ears === 'tall' ? 0.75 : 0.55;
+      const ear = put(new THREE.ConeGeometry(0.2, hgt, 10), fur, s * 0.32, 0.55 + (hgt - 0.55) / 2, -0.05, 1, 1, 1, head);
+      ear.rotation.z = -s * 0.25;
+    }
+    put(S(0.075), mats.dark, s * 0.27, 0.1, 0.55, 1, 1, 1, head);
+    put(S(0.3), cream, s * 0.42, -0.2, 0.25, 0.6, 0.6, 0.5, head);
+  }
+  put(S(0.3), cream, 0, -0.2, 0.5, 1.1, 0.85, 1.5, head);
+  put(S(0.09), mats.dark, 0, -0.08, 0.92, 1, 1, 1, head);
+
+  const tailPivot = new THREE.Group();
+  tailPivot.position.set(0, 1.2 + dy, -0.7 * b.len);
+  g.add(tailPivot);
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0, 0, 0), new THREE.Vector3(0.45, 0.3, -0.5),
+    new THREE.Vector3(0.55, 1.0, -0.6), new THREE.Vector3(0.1, 1.4, -0.45)
+  ]);
+  tailPivot.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 30, 0.14, 10, false), fur));
+  const tip = curve.getPoint(1);
+  put(S(0.17), cream, tip.x, tip.y, tip.z, 1, 1, 1, tailPivot);
+
+  const disc = new THREE.Mesh(
+    new THREE.CircleGeometry(1.3, 28),
+    new THREE.MeshBasicMaterial({ color: teamHex, transparent: true, opacity: 0.55 })
+  );
+  disc.rotation.x = -Math.PI / 2;
+  disc.position.y = 0.02;
+  root.add(disc);
+
+  // Kalkan efekti
+  const shieldMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(1.6, 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0x66ccff, transparent: true, opacity: 0.35 })
+  );
+  shieldMesh.position.y = 1.0;
+  shieldMesh.visible = false;
+  root.add(shieldMesh);
+
+  return { g: root, model: g, body, legs, head, fur, headY: 1.8 + dy, tailPivot, disc, shieldMesh, dy };
+}
+
+// Şapkalar (kafaya bağlı)
+function makeHat(id) {
+  const grp = new THREE.Group();
+  const col = ITEM[id].color;
+  const m = toon(col);
+  const md = toonD(col);
+  switch (id) {
+    case 'beanie': {
+      grp.add(lathe([[0, 0.45], [0.6, 0.42], [0.66, 0.55], [0.62, 0.85], [0.42, 1.0], [0.12, 1.05], [0, 1.05]], m));
+      const cuff = new THREE.Mesh(new THREE.TorusGeometry(0.63, 0.1, 10, 28), toon(shade(col, 0.75)));
+      cuff.rotation.x = Math.PI / 2;
+      cuff.position.y = 0.45;
+      const pom = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8), toon(0xFFF4E3));
+      pom.position.y = 1.1;
+      grp.add(cuff, pom);
+      break;
+    }
+    case 'flower': {
+      const leaf = toon(0x3E9B3E);
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.09, 10, 32), leaf);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = 0.5;
+      grp.add(ring);
+      const pinks = [0xFF8FB1, 0xFFB3C6, 0xFF6F91];
+      for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2;
+        const cx = Math.cos(a) * 0.5, cz = Math.sin(a) * 0.5;
+        const fl = new THREE.Group();
+        fl.position.set(cx, 0.52, cz);
+        const pc = toon(pinks[i % 3]);
+        for (let k = 0; k < 5; k++) {
+          const pa = k / 5 * Math.PI * 2;
+          const pet = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6), pc);
+          pet.position.set(Math.cos(pa) * 0.12, 0.02, Math.sin(pa) * 0.12);
+          pet.scale.y = 0.5;
+          fl.add(pet);
+        }
+        const center = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), toon(0xFFD34D));
+        center.position.y = 0.05;
+        fl.add(center);
+        grp.add(fl);
+        const lf = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 6), leaf);
+        lf.scale.set(1.6, 0.3, 0.8);
+        lf.position.set(Math.cos(a + 0.4) * 0.5, 0.45, Math.sin(a + 0.4) * 0.5);
+        lf.rotation.y = -a;
+        grp.add(lf);
+      }
+      break;
+    }
+    case 'cap': {
+      grp.add(lathe([[0, 0.62], [0.56, 0.62], [0.6, 0.78], [0.52, 0.95], [0.3, 1.0], [0, 1.02]], m));
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.05, 28, 1, false, -Math.PI / 2, Math.PI), md);
+      brim.position.set(0, 0.64, 0);
+      const button = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), toon(shade(col, 0.6)));
+      button.position.y = 1.02;
+      grp.add(brim, button);
+      break;
+    }
+    case 'party': {
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(0.42, 1.0, 24, 1, true), toonD(col));
+      cone.position.y = 1.0;
+      grp.add(cone);
+      for (const yy of [0.8, 1.1, 1.35]) {
+        const r = 0.42 * (1 - (yy - 0.5) / 1.0);
+        const stripe = new THREE.Mesh(new THREE.TorusGeometry(r, 0.03, 6, 24), toon(0xFFFFFF));
+        stripe.rotation.x = Math.PI / 2;
+        stripe.position.y = yy;
+        grp.add(stripe);
+      }
+      const pom = new THREE.Mesh(new THREE.SphereGeometry(0.1, 10, 8), toon(0xFFF4E3));
+      pom.position.y = 1.5;
+      grp.add(pom);
+      break;
+    }
+    case 'cowboy': {
+      grp.add(lathe([[0, 0.66], [0.55, 0.66], [0.95, 0.6], [1.22, 0.64], [1.24, 0.7], [0.98, 0.7], [0.55, 0.74], [0, 0.76]], md));
+      grp.add(lathe([[0, 0.72], [0.5, 0.74], [0.52, 0.9], [0.5, 1.05], [0.42, 1.16], [0.3, 1.2], [0, 1.2]], m));
+      const band = new THREE.Mesh(new THREE.CylinderGeometry(0.515, 0.515, 0.1, 24), toon(0x3A2418));
+      band.position.y = 0.78;
+      grp.add(band);
+      break;
+    }
+    case 'horns': {
+      const hm = toon(col);
+      for (const s of [-1, 1]) {
+        const curve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(s * 0.3, 0.45, -0.05), new THREE.Vector3(s * 0.5, 0.85, -0.1),
+          new THREE.Vector3(s * 0.42, 1.2, -0.12), new THREE.Vector3(s * 0.2, 1.4, -0.1)
+        ]);
+        grp.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.1, 10, false), hm));
+      }
+      break;
+    }
+    case 'viking': {
+      const steel = metal(col, 0.3);
+      grp.add(lathe([[0, 0.5], [0.6, 0.5], [0.66, 0.6], [0.62, 0.8], [0.45, 0.98], [0.12, 1.04], [0, 1.04]], steel));
+      const gold = metal(0xD9A93C, 0.3);
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.62, 0.05, 8, 32), gold);
+      rim.rotation.x = Math.PI / 2;
+      rim.position.y = 0.5;
+      const nose = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.42, 0.05), steel);
+      nose.position.set(0, 0.7, 0.6);
+      grp.add(rim, nose);
+      const bronze = metal(0xF2E3B3, 0.4);
+      for (const s of [-1, 1]) {
+        const curve = new THREE.CatmullRomCurve3([
+          new THREE.Vector3(s * 0.58, 0.85, 0), new THREE.Vector3(s * 0.85, 0.95, 0.05),
+          new THREE.Vector3(s * 1.05, 0.8, 0.05), new THREE.Vector3(s * 1.12, 0.45, 0.02)
+        ]);
+        grp.add(new THREE.Mesh(new THREE.TubeGeometry(curve, 24, 0.09, 10, false), bronze));
+      }
+      break;
+    }
+    case 'crown': {
+      const gold = metal(col, 0.25);
+      grp.add(lathe([[0, 0.55], [0.6, 0.55], [0.62, 0.6], [0.6, 0.85], [0, 0.85]], gold));
+      for (let i = 0; i < 6; i++) {
+        const a = i / 6 * Math.PI * 2;
+        const sp = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.4, 6), gold);
+        sp.position.set(Math.cos(a) * 0.5, 1.05, Math.sin(a) * 0.5);
+        const gem = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), toon(0xD7263D));
+        gem.position.set(Math.cos(a) * 0.6, 0.72, Math.sin(a) * 0.6);
+        grp.add(sp, gem);
+      }
+      break;
+    }
+    case 'turkeyhat': {
+      grp.add(lathe([[0, 0.5], [0.6, 0.5], [0.66, 0.6], [0.62, 0.8], [0.45, 0.98], [0.12, 1.04], [0, 1.04]], toon(col)));
+      const white = toon(0xFFFFFF);
+      const crescent = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.05, 8, 24, Math.PI * 1.3), white);
+      crescent.rotation.z = Math.PI * 0.35;
+      crescent.position.set(0, 0.75, 0.62);
+      const star = new THREE.Shape();
+      for (let i = 0; i < 10; i++) {
+        const r = i % 2 ? 0.04 : 0.1;
+        const a = Math.PI / 2 + i * Math.PI / 5;
+        if (i === 0) star.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+        else star.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+      }
+      const starM = new THREE.Mesh(new THREE.ShapeGeometry(star), white);
+      starM.position.set(0.14, 0.75, 0.63);
+      grp.add(crescent, starM);
+      break;
+    }
+    case 'halo': {
+      const glow = new THREE.MeshBasicMaterial({ color: 0xFFE27A });
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.05, 10, 32), glow);
+      ring.rotation.x = Math.PI / 2;
+      ring.position.y = 1.25;
+      const soft = new THREE.Mesh(new THREE.TorusGeometry(0.5, 0.12, 10, 32),
+        new THREE.MeshBasicMaterial({ color: 0xFFE27A, transparent: true, opacity: 0.3 }));
+      soft.rotation.x = Math.PI / 2;
+      soft.position.y = 1.25;
+      grp.add(ring, soft);
+      break;
+    }
+  }
+  return grp;
+}
+
+// Kıyafetler (gövdeye bağlı). view.legs: bacak mafsalları (kol gibi kılıflar için)
+function makeOutfit(id, b, view) {
+  const grp = new THREE.Group();
+  const col = ITEM[id].color;
+  const m = toon(col);
+  const L = b.len, dy = view.dy;
+  switch (id) {
+    case 'bandana': {
+      grp.add(neckRing(0.56, 0.07, toon(shade(col, 0.85)), 1.38 + dy, 0.72 * L));
+      const shape = new THREE.Shape();
+      shape.moveTo(-0.5, 0); shape.lineTo(0.5, 0); shape.lineTo(0, -0.95); shape.closePath();
+      const tri = new THREE.Mesh(new THREE.ShapeGeometry(shape), toonD(col));
+      tri.position.set(0, 1.3 + dy, 0.72 * L + 0.5);
+      grp.add(tri);
+      break;
+    }
+    case 'collar': {
+      const band = metal(col, 0.3);
+      grp.add(neckRing(0.54, 0.08, band, 1.4 + dy, 0.7 * L));
+      const e1 = new THREE.Vector3(1, 0, 0);
+      const e2 = new THREE.Vector3().crossVectors(NECK_N, e1).normalize();
+      const center = new THREE.Vector3(0, 1.4 + dy, 0.7 * L);
+      for (let i = 0; i < 8; i++) {
+        const a = i / 8 * Math.PI * 2;
+        const dir = new THREE.Vector3().addScaledVector(e1, Math.cos(a)).addScaledVector(e2, Math.sin(a)).normalize();
+        const spike = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.18, 6), metal(0xDDDDDD, 0.25));
+        spike.position.copy(center).addScaledVector(dir, 0.62);
+        spike.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+        grp.add(spike);
+      }
+      break;
+    }
+    case 'scarf': {
+      const wool = toon(col);
+      grp.add(neckRing(0.56, 0.15, wool, 1.42 + dy, 0.72 * L));
+      grp.add(neckRing(0.6, 0.13, wool, 1.56 + dy, 0.72 * L));
+      const tail = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.95, 0.12), wool);
+      tail.position.set(0.32, 1.0 + dy, 0.72 * L + 0.5);
+      tail.rotation.x = 0.25;
+      const tail2 = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.7, 0.12), toon(shade(col, 0.85)));
+      tail2.position.set(0.1, 0.95 + dy, 0.72 * L + 0.58);
+      tail2.rotation.x = 0.2;
+      grp.add(tail, tail2);
+      break;
+    }
+    case 'backpack': {
+      const bp = new THREE.Mesh(new THREE.BoxGeometry(0.95, 1.05, 0.5), m);
+      bp.position.set(0, 1.35 + dy, -L - 0.2);
+      const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.4, 0.12), toon(shade(col, 0.8)));
+      pocket.position.set(0, 1.1 + dy, -L - 0.47);
+      const strap = toon(0x2A1A0E);
+      for (const s of [-1, 1]) {
+        const st = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.9, 0.08), strap);
+        st.position.set(s * 0.32, 1.45 + dy, -L + 0.1);
+        grp.add(st);
+      }
+      grp.add(bp, pocket);
+      break;
+    }
+    case 'vest': {
+      const torso = new THREE.Mesh(new THREE.SphereGeometry(1.02, 20, 14), m);
+      torso.scale.set(0.92, 0.8, L * 1.04);
+      torso.position.set(0, 1.1 + dy, 0);
+      grp.add(torso);
+      const pk = toon(shade(col, 0.7));
+      for (const s of [-1, 1]) {
+        const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.18, 0.06), pk);
+        pocket.position.set(s * 0.4, 1.0 + dy, L * 0.96);
+        grp.add(pocket);
+      }
+      break;
+    }
+    case 'jacket': {
+      const torso = new THREE.Mesh(new THREE.SphereGeometry(1.06, 20, 14), m);
+      torso.scale.set(0.9, 0.8, L * 1.06);
+      torso.position.set(0, 1.1 + dy, 0);
+      grp.add(torso);
+      grp.add(neckRing(0.5, 0.1, toon(shade(col, 0.7)), 1.45 + dy, 0.7 * L));
+      const zip = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.8, 0.03), toon(0xDDDDDD));
+      zip.position.set(0, 1.1 + dy, L * 1.04);
+      grp.add(zip);
+      for (const L2 of view.legs) {
+        const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.19, 0.62, 12), m);
+        sleeve.position.set(0, -0.3, 0);
+        L2.pivot.add(sleeve);
+      }
+      break;
+    }
+    case 'cape': {
+      const geo = new THREE.PlaneGeometry(1.5, 1.6, 10, 10);
+      const pos = geo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const y = pos.getY(i);
+        const t = (0.8 - y) / 1.6;   // 0 üst, 1 alt
+        pos.setZ(i, -0.6 * t * t);   // alt kısım arkaya savrulur
+      }
+      geo.computeVertexNormals();
+      const cape = new THREE.Mesh(geo, toonD(col));
+      cape.position.set(0, 1.15 + dy, -L * 0.8);
+      grp.add(cape);
+      break;
+    }
+    case 'astronaut': {
+      const helmet = new THREE.Mesh(new THREE.SphereGeometry(0.78, 22, 16), metal(col, 0.2));
+      helmet.position.set(0, 1.8 + dy, 0.77 * L);
+      helmet.scale.setScalar(b.head);
+      const visor = new THREE.Mesh(new THREE.SphereGeometry(0.55, 18, 12), metal(0x1E90FF, 0.1));
+      visor.material.transparent = true;
+      visor.material.opacity = 0.85;
+      visor.scale.set(0.95, 0.7, 0.45);
+      visor.scale.multiplyScalar(b.head);
+      visor.position.set(0, 1.82 + dy, 0.77 * L + 0.62 * b.head);
+      grp.add(helmet, visor);
+      grp.add(neckRing(0.5, 0.12, metal(0x999999, 0.5), 1.3 + dy, 0.77 * L));
+      break;
+    }
+  }
+  return grp;
+}
+
+// Yüz eşyaları (gözlük, göz bandı) ve aksesuarlar (kulaklık, papyon, madalya): kafa koordinatında
+function makeFace(id) {
+  const grp = new THREE.Group();
+  const col = ITEM[id].color;
+  if (id === 'glasses' || id === 'sun') {
+    const frameM = id === 'sun' ? toon(0x111111) : metal(col, 0.3);
+    const lensM = new THREE.MeshBasicMaterial({ color: id === 'sun' ? 0x222222 : 0x9fe3ff, transparent: true, opacity: 0.45, side: THREE.DoubleSide });
+    for (const s of [-1, 1]) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.03, 8, 20), frameM);
+      ring.position.set(s * 0.27, 0.1, 0.6);
+      const lens = new THREE.Mesh(new THREE.CircleGeometry(0.14, 20), lensM);
+      lens.position.set(s * 0.27, 0.1, 0.61);
+      grp.add(ring, lens);
+    }
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.03, 0.03), frameM);
+    bridge.position.set(0, 0.12, 0.6);
+    grp.add(bridge);
+  } else if (id === 'dealwithit') {
+    // Deal with it gözlüğü: iri siyah dikdörtgen camlar, üstte kalın bir bar
+    const bk = toon(0x0a0a0a);
+    for (const s of [-1, 1]) {
+      const lens = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.2, 0.05), bk);
+      lens.position.set(s * 0.26, 0.14, 0.63);
+      grp.add(lens);
+    }
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.1, 0.06), bk);
+    bar.position.set(0, 0.26, 0.63);
+    grp.add(bar);
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.05), bk);
+    bridge.position.set(0, 0.12, 0.63);
+    grp.add(bridge);
+  } else if (id === 'patch') {
+    const pm = toon(0x111111);
+    const patch = new THREE.Mesh(new THREE.CircleGeometry(0.17, 20), pm);
+    patch.position.set(-0.27, 0.1, 0.62);
+    const band = new THREE.Mesh(new THREE.TorusGeometry(0.64, 0.035, 8, 32), pm);
+    band.rotation.x = Math.PI / 2;
+    band.position.set(0, 0.12, 0);
+    grp.add(patch, band);
+  }
+  return grp;
+}
+
+function makeAcc(id) {
+  const grp = new THREE.Group();
+  const col = ITEM[id].color;
+  if (id === 'headphones') {
+    const band = new THREE.Mesh(new THREE.TorusGeometry(0.68, 0.06, 10, 32, Math.PI), toon(col));
+    grp.add(band);
+    for (const s of [-1, 1]) {
+      const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.2, 20), toon(col));
+      cup.rotation.z = Math.PI / 2;
+      cup.position.set(s * 0.68, -0.05, 0);
+      const pad = new THREE.Mesh(new THREE.TorusGeometry(0.17, 0.05, 8, 20), toon(0x222222));
+      pad.rotation.y = Math.PI / 2;
+      pad.position.set(s * 0.8, -0.05, 0);
+      grp.add(cup, pad);
+    }
+  } else if (id === 'bowtie') {
+    const bm = toon(col);
+    for (const s of [-1, 1]) {
+      const wing = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.35, 10), bm);
+      wing.rotation.z = -s * Math.PI / 2;
+      wing.position.set(s * 0.2, -0.55, 0.6);
+      grp.add(wing);
+    }
+    const knot = new THREE.Mesh(new THREE.SphereGeometry(0.07, 10, 8), bm);
+    knot.position.set(0, -0.55, 0.62);
+    grp.add(knot);
+  } else if (id === 'medal') {
+    const ribbonM = toon(0xD7263D);
+    for (const s of [-1, 1]) {
+      const rib = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.8, 0.04), ribbonM);
+      rib.position.set(s * 0.14, -0.5, 0.55);
+      rib.rotation.z = -s * 0.35;
+      grp.add(rib);
+    }
+    const disc = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.05, 24), metal(col, 0.25));
+    disc.rotation.x = Math.PI / 2;
+    disc.position.set(0, -0.9, 0.6);
+    grp.add(disc);
+  }
+  return grp;
+}
+
+// Takılı eşyalar: eq verilmezse kayıttaki kuşanma kullanılır
+function applyCosmetics(view, b, eq = save.equip) {
+  if (eq.hat) view.head.add(makeHat(eq.hat));
+  if (eq.face) view.head.add(makeFace(eq.face));
+  if (eq.acc) view.head.add(makeAcc(eq.acc));
+  if (eq.outfit) view.model.add(makeOutfit(eq.outfit, b, view));
+}
+
+// ---------- Animasyon: yürüme, koşma, saldırı, zıplama, yetenek ----------
+// st: { walkT, moving, vel, airborne, atkP, abP, stun, clock, breed }
+function poseDog(v, st) {
+  const run = st.vel > 11;
+  const A = st.moving && !st.airborne ? (run ? 0.9 : 0.5) : 0;
+  const atkP = st.atkP, abP = st.abP;
+  for (const L of v.legs) {
+    let r;
+    if (st.airborne) {
+      r = L.front ? -0.8 : 0.8;          // zıplarken bacaklar uzanır
+    } else {
+      // Çapraz bacaklar birlikte hareket eder (trot)
+      const diag = L.front === (L.side < 0);
+      r = Math.sin(st.walkT + (diag ? 0 : Math.PI)) * A;
+    }
+    if (atkP >= 0 && L.front && L.side > 0) r -= Math.sin(atkP * Math.PI) * 1.1; // saldırı vuruşu
+    if (abP >= 0 && L.front) r -= Math.sin(abP * Math.PI) * 0.8;                  // yetenek pozu
+    L.pivot.rotation.x = r;
+  }
+  v.model.position.y = st.moving && !st.airborne ? Math.abs(Math.sin(st.walkT)) * (run ? 0.1 : 0.05) : 0;
+  v.body.scale.y = 0.75 + (st.moving ? 0 : Math.sin(st.clock * 2) * 0.015);
+  v.model.rotation.y = abP >= 0 && abP < 1 ? (1 - abP) * Math.PI * 2 : 0;
+  let hx = 0;
+  if (atkP >= 0) hx -= Math.sin(atkP * Math.PI) * 0.35;
+  if (abP >= 0 && st.breed === 'husky') hx -= Math.sin(abP * Math.PI) * 0.9; // uluma: kafa yukarı
+  v.head.rotation.x = hx;
+  v.head.rotation.z = st.stun > 0 ? Math.sin(st.clock * 30) * 0.2 : 0;
+  v.head.position.y = v.headY;
+}
+
+// ---------- Can barı (karakterin üstünde) ----------
+function makeBar(team, isPlayer) {
+  const g = new THREE.Group();
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.2), new THREE.MeshBasicMaterial({ color: 0x222222 }));
+  const color = isPlayer ? 0x4cc35a : TEAM[team];
+  const fill = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.14), new THREE.MeshBasicMaterial({ color }));
+  fill.position.z = 0.01;
+  g.add(bg, fill);
+  scene.add(g);
+  return { g, fill };
+}
+
+function updateBar(f) {
+  f.bar.g.visible = f.alive;
+  f.bar.g.position.set(f.pos.x, 3.2 + f.y, f.pos.z);
+  f.bar.g.lookAt(camera.position);
+  const r = Math.max(0, f.hp / f.maxHp);
+  f.bar.fill.scale.x = Math.max(r, 0.001);
+  f.bar.fill.position.x = -0.8 * (1 - r);
+}
+
+// Saldırı halkası
+const attackRing = new THREE.Mesh(
+  new THREE.RingGeometry(1.2, 1.6, 24),
+  new THREE.MeshBasicMaterial({ color: 0xffd34d, transparent: true, opacity: 0.9 })
+);
+attackRing.rotation.x = -Math.PI / 2;
+attackRing.visible = false;
+scene.add(attackRing);
+let ringT = 0;
+
+// Yetenek ateş parçacıkları
+const fireGeo = new THREE.SphereGeometry(0.3, 8, 6);
+const fireMats = [new THREE.MeshBasicMaterial({ color: 0xff6a00 }), new THREE.MeshBasicMaterial({ color: 0xffd34d })];
+const particles = [];
+
+function spawnFire(f) {
+  for (let i = 0; i < 2; i++) {
+    const m = new THREE.Mesh(fireGeo, fireMats[Math.floor(Math.random() * 2)]);
+    m.position.set(
+      f.pos.x - f.dashDir.x * 0.8 + (Math.random() - 0.5) * 0.6,
+      0.6 + f.y,
+      f.pos.z - f.dashDir.z * 0.8 + (Math.random() - 0.5) * 0.6
+    );
+    scene.add(m);
+    particles.push({ m, life: 0.5, vy: 2 + Math.random() * 2 });
+  }
+}
+
+function updateParticles(dt) {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.life -= dt;
+    p.m.position.y += p.vy * dt;
+    const s = Math.max(0.01, p.life / 0.5);
+    p.m.scale.set(s, s, s);
+    if (p.life <= 0) {
+      scene.remove(p.m);
+      particles.splice(i, 1);
+    }
+  }
+}
+
+// ---------- Pati izleri (elmasla alınan aksesuar) ----------
+const prints = [];
+function spawnPrint(x, z, yaw, side, color) {
+  const grp = new THREE.Group();
+  const mat = new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.8, depthWrite: false });
+  const pad = new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 6), mat);
+  pad.scale.set(1, 0.08, 0.85);
+  grp.add(pad);
+  for (let i = 0; i < 4; i++) {
+    const a = -0.5 + i * 0.33;
+    const toe = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 6), mat);
+    toe.scale.set(1, 0.08, 1);
+    toe.position.set(Math.sin(a) * 0.2, 0, Math.cos(a) * 0.2 + 0.08);
+    grp.add(toe);
+  }
+  grp.position.set(x + Math.cos(yaw) * side * 0.35, 0.03, z - Math.sin(yaw) * side * 0.35);
+  grp.rotation.y = yaw;
+  scene.add(grp);
+  prints.push({ grp, mat, life: 4 });
+  if (prints.length > 60) scene.remove(prints.shift().grp);
+}
+function updatePrints(dt) {
+  for (let i = prints.length - 1; i >= 0; i--) {
+    const p = prints[i];
+    p.life -= dt;
+    p.mat.opacity = Math.max(0, Math.min(0.8, p.life));
+    if (p.life <= 0) { scene.remove(p.grp); prints.splice(i, 1); }
+  }
+}
+
+// ---------- Emojiler (savaşta gösterilir) ----------
+// Gökkuşağı iz: köpeğin arkasından çıkan renkli küpler
+const ribbons = [];
+const ribbonGeo = new THREE.BoxGeometry(0.35, 0.35, 0.35);
+function spawnRibbon(f) {
+  const hue = (clock * 0.5 + ribbons.length * 0.02) % 1;
+  const m = new THREE.Mesh(ribbonGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color().setHSL(hue, 0.9, 0.6), transparent: true, opacity: 0.9 }));
+  m.position.set(
+    f.pos.x - Math.sin(f.yaw) * 1.0 + (Math.random() - 0.5) * 0.4,
+    1.0 + f.y,
+    f.pos.z - Math.cos(f.yaw) * 1.0 + (Math.random() - 0.5) * 0.4
+  );
+  scene.add(m);
+  ribbons.push({ m, life: 0.9 });
+  if (ribbons.length > 150) scene.remove(ribbons.shift().m);
+}
+function updateRibbons(dt) {
+  for (let i = ribbons.length - 1; i >= 0; i--) {
+    const r = ribbons[i];
+    r.life -= dt;
+    const k = Math.max(0, r.life / 0.9);
+    r.m.scale.setScalar(Math.max(0.05, k));
+    r.m.material.opacity = k * 0.9;
+    if (r.life <= 0) { scene.remove(r.m); ribbons.splice(i, 1); }
+  }
+}
+
+const emoteTex = {};
+function emoteSprite(emoji) {
+  if (!emoteTex[emoji]) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 128;
+    const ctx = cv.getContext('2d');
+    ctx.font = '96px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(emoji, 64, 70);
+    emoteTex[emoji] = new THREE.CanvasTexture(cv);
+  }
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: emoteTex[emoji], transparent: true, depthTest: false }));
+  sp.scale.set(1.4, 1.4, 1);
+  return sp;
+}
+function playEmote(em) {
+  if (!player || !player.alive) return;
+  if (online) sendNet('emote', { sid: player.sid, emoji: em.emoji });
+  if (player.emoteSp) scene.remove(player.emoteSp);
+  player.emoteSp = emoteSprite(em.emoji);
+  player.emoteT = 2.5;
+  scene.add(player.emoteSp);
+}
+function buildEmoteBar() {
+  const bar = $('emotes');
+  bar.innerHTML = '';
+  for (const e of EMOTES) {
+    if (!save.owned.includes(e.id)) continue;
+    const btn = document.createElement('button');
+    btn.textContent = e.emoji;
+    btn.addEventListener('click', ev => { ev.stopPropagation(); playEmote(e); });
+    bar.appendChild(btn);
+  }
+}
+
+// ---------- Savaşçılar ----------
+let fighters = [], pickups = [], scores = { blue: 0, red: 0 }, player = null;
+let state = 'menu', remaining = MATCH_TIME, mode = '3v3', clock = 0;
+let atkPressed = false, abPressed = false, jumpPressed = false;
+
+function spawnPoint(team, i) {
+  return new THREE.Vector3(team === 'blue' ? -110 : 110, 0, [0, -4, 4][i] || 0);
+}
+
+function makeFighter(team, isPlayer, i, breedKey, eq, owner, sid) {
+  const b = BREEDS[breedKey];
+  const k = (isPlayer || eq) ? 1 : BOT_FACTOR;
+  const maxHp = Math.round(b.hp * k);
+  const view = buildDog(TEAM[team], b);
+  if (isPlayer || eq) applyCosmetics(view, b, eq || save.equip);
+  scene.add(view.g);
+  const spawn = spawnPoint(team, i);
+  const fOwner = owner || myId;
+  const f = {
+    team, isPlayer, breedKey, view, spawn, pos: spawn.clone(),
+    owner: fOwner, sid: sid || ('off' + team + i), remote: fOwner !== myId,
+    kv: { x: 0, z: 0 },
+    yaw: team === 'blue' ? Math.PI / 2 : -Math.PI / 2,
+    hp: maxHp, maxHp,
+    atk: Math.round(b.atk * k), ab: Math.round(b.ab * k), spd: b.spd,
+    alive: true, respawn: 0,
+    atkCd: 0, atkAnim: 0, abCd: 0, abAnim: 0, walkT: 0, vel: 0,
+    dash: 0, dashDir: { x: 0, z: 0 }, hitSet: new Set(), moving: false,
+    y: 0, vy: 0, lastHit: -10, shield: 0,
+    stun: 0, boost: 0, leap: false
+  };
+  f.bar = makeBar(team, isPlayer);
+  fighters.push(f);
+  return f;
+}
+
+function enemies(f) { return fighters.filter(e => e.team !== f.team && e.alive); }
+
+function move(f, dt, ix, iz) {
+  const base = (inWater(f) ? SPEED * 0.55 : SPEED) * f.spd;
+  const sp = base * (f.boost > 0 ? 1.6 : 1);
+  let vx = ix * sp, vz = iz * sp;
+  if (f.dash > 0) { vx = f.dashDir.x * 40; vz = f.dashDir.z * 40; }
+  f.pos.x += (vx + f.kv.x) * dt;
+  f.pos.z += (vz + f.kv.z) * dt;
+  const k = Math.max(0, 1 - 8 * dt);
+  f.kv.x *= k; f.kv.z *= k;
+  collide(f.pos, 0.6, f.y);
+  f.vel = Math.hypot(vx, vz);
+  f.moving = f.vel > 0.5;
+  if (f.moving && f.dash <= 0) f.yaw = Math.atan2(vx, vz);
+}
+
+function damage(f, amt, ux, uz) {
+  // Hasar, savaşçının sahibinin cihazında uygulanır
+  if (f.owner && f.owner !== myId) { sendNet('hit', { sid: f.sid, amt, ux, uz }, f.owner); return; }
+  if (!f.alive || f.shield > 0) return;
+  f.hp -= amt;
+  f.lastHit = clock;
+  // Engelin üstündeyken geri itilmez
+  if (groundAt(f) <= 0) {
+    f.kv.x = ux * 7;
+    f.kv.z = uz * 7;
+  }
+  if (f.hp <= 0) die(f);
+}
+
+function die(f) {
+  f.y = 0;
+  f.vy = 0;
+  f.alive = false;
+  f.hp = 0;
+  f.respawn = 3;
+  f.dash = 0;
+  f.leap = false;
+  f.view.disc.visible = false;
+}
+
+function revive(f) {
+  f.alive = true;
+  f.shield = 20;
+  f.hp = f.maxHp;
+  f.pos.copy(f.spawn);
+  f.kv = { x: 0, z: 0 };
+  f.dash = 0;
+  f.stun = 0;
+  f.view.disc.visible = true;
+}
+
+function attack(f) {
+  if (f.atkCd > 0 || !f.alive || f.stun > 0) return;
+  f.atkCd = 0.5;
+  f.atkAnim = 0.3;
+  attackRing.position.set(f.pos.x, 0.05, f.pos.z);
+  attackRing.visible = true;
+  ringT = 0.3;
+  // Otomatik nişan: menzildeki en yakın düşmana dön ve vur
+  let target = null, best = 4.0;
+  for (const e of enemies(f)) {
+    const d = Math.hypot(e.pos.x - f.pos.x, e.pos.z - f.pos.z);
+    if (d < best) { best = d; target = e; }
+  }
+  if (!target) {
+    // Düşman yoksa en yakın sandığı vur
+    let chest = null, bestC = 4.0;
+    for (const o of chests) {
+      if (o.hp <= 0) continue;
+      const d = Math.hypot(o.x - f.pos.x, o.z - f.pos.z);
+      if (d < bestC) { bestC = d; chest = o; }
+    }
+    if (chest) {
+      f.yaw = Math.atan2(chest.x - f.pos.x, chest.z - f.pos.z);
+      hitChest(chest, f.atk);
+    }
+    return;
+  }
+  const dx = target.pos.x - f.pos.x, dz = target.pos.z - f.pos.z;
+  const d = Math.max(Math.hypot(dx, dz), 1e-6);
+  f.yaw = Math.atan2(dx, dz);
+  damage(target, f.atk, dx / d, dz / d);
+}
+
+// Çevredeki düşmanlara alan etkisi: hasar ve sersemletme
+function area(f, r, dmg, stun) {
+  for (const e of enemies(f)) {
+    const dx = e.pos.x - f.pos.x, dz = e.pos.z - f.pos.z;
+    const d = Math.max(Math.hypot(dx, dz), 1e-6);
+    if (d <= r) {
+      if (dmg > 0) damage(e, dmg, dx / d, dz / d);
+      e.stun = Math.max(e.stun, stun);
+    }
+  }
+}
+
+// Her ırkın kendi yeteneği
+function ability(f) {
+  if (f.abCd > 0 || !f.alive || f.stun > 0) return;
+  f.abCd = 5;
+  f.abAnim = 0.5;
+  switch (f.breedKey) {
+    case 'shiba':
+      f.dash = 0.35;
+      f.dashDir = { x: Math.sin(f.yaw), z: Math.cos(f.yaw) };
+      f.hitSet = new Set();
+      break;
+    case 'husky':
+      area(f, 7, Math.round(f.ab * 0.5), 1.5);
+      break;
+    case 'corgi':
+      f.vy = 12;
+      f.leap = true;
+      break;
+    case 'dachshund':
+      f.boost = 2.5;
+      f.shield = Math.max(f.shield, 2.5);
+      break;
+    case 'golden':
+      f.hp = Math.min(f.maxHp, f.hp + Math.round(f.maxHp * 0.4));
+      break;
+    case 'pug':
+      area(f, 9, 0, 2);
+      break;
+    case 'bulldog':
+      area(f, 4, Math.round(f.ab * 0.6), 1.2);
+      break;
+    case 'beagle':
+      f.boost = 3;
+      f.hp = Math.min(f.maxHp, f.hp + Math.round(f.maxHp * 0.1));
+      break;
+    case 'poodle':
+      f.shield = Math.max(f.shield, 4);
+      area(f, 5, 0, 1.0);
+      break;
+    case 'doberman':
+      f.dash = 0.25;
+      f.dashDir = { x: Math.sin(f.yaw), z: Math.cos(f.yaw) };
+      f.hitSet = new Set();
+      break;
+  }
+}
+
+function dashHits(f) {
+  for (const e of enemies(f)) {
+    if (f.hitSet.has(e)) continue;
+    if (Math.hypot(e.pos.x - f.pos.x, e.pos.z - f.pos.z) < 1.6) {
+      f.hitSet.add(e);
+      damage(e, f.ab, f.dashDir.x, f.dashDir.z);
+    }
+  }
+}
+
+function jump(f) {
+  if (!f.alive || f.stun > 0 || f.y > groundAt(f) + 0.01) return;
+  f.vy = 9;
+}
+
+// ---------- Basit bot yapay zekası ----------
+function bot(f, dt) {
+  let foe = null, fd = 1e9;
+  for (const e of enemies(f)) {
+    const d = Math.hypot(e.pos.x - f.pos.x, e.pos.z - f.pos.z);
+    if (d < fd) { fd = d; foe = e; }
+  }
+
+  let goal = null;
+  if (foe && (fd < 9 || f.hp > f.maxHp * 0.6)) {
+    goal = foe.pos;
+  } else {
+    let best = 1e9;
+    for (const p of pickups) {
+      if (!p.active || (p.type !== 'energy' && f.hp >= f.maxHp * 0.6)) continue;
+      const d = Math.hypot(p.x - f.pos.x, p.z - f.pos.z);
+      if (d < best) { best = d; goal = new THREE.Vector3(p.x, 0, p.z); }
+    }
+  }
+
+  let ix = 0, iz = 0;
+  if (goal) {
+    const dx = goal.x - f.pos.x, dz = goal.z - f.pos.z, l = Math.hypot(dx, dz);
+    if (l > 0.3) { ix = dx / l; iz = dz / l; }
+  }
+  move(f, dt, ix, iz);
+
+  if (foe) {
+    if (fd < 4) f.yaw = Math.atan2(foe.pos.x - f.pos.x, foe.pos.z - f.pos.z);
+    if (fd < 2.3) attack(f);
+    if (fd < 6 && f.abCd <= 0 && Math.random() < dt * 1.2) ability(f);
+  }
+}
+
+// ---------- Enerji ve can küpleri ----------
+function placePickup(p) {
+  do {
+    p.x = (Math.random() * 2 - 1) * 90;
+    p.z = (Math.random() * 2 - 1) * 60;
+  } while (blocked(p.x, p.z, 0.8));
+  p.active = true;
+  p.mesh.visible = true;
+  p.mesh.position.set(p.x, 0.7, p.z);
+}
+
+function makePickup(type) {
+  const geo = type === 'energy' ? new THREE.BoxGeometry(0.5, 0.5, 0.5) : new THREE.SphereGeometry(0.6, 14, 10);
+  const mesh = new THREE.Mesh(geo, type === 'energy' ? mats.energy : mats.heal);
+  scene.add(mesh);
+  const p = { type, mesh, active: false, t: 0, x: 0, z: 0 };
+  placePickup(p);
+  pickups.push(p);
+}
+
+function updatePickups(dt) {
+  for (const p of pickups) {
+    if (!p.active) {
+      p.t -= dt;
+      if (p.t <= 0) placePickup(p);
+      continue;
+    }
+    p.mesh.rotation.y += dt * 2;
+    p.mesh.position.y = 0.7 + Math.sin(clock * 3 + p.x) * 0.1;
+    for (const f of fighters) {
+      if (!f.alive) continue;
+      if (Math.hypot(f.pos.x - p.x, f.pos.z - p.z) < 1.6) {
+        if (p.type === 'energy') scores[f.team]++;
+        else f.hp = p.full ? f.maxHp : Math.min(f.maxHp, f.hp + 1500);
+        p.active = false;
+        p.mesh.visible = false;
+        p.t = p.full ? Infinity : 5;
+        break;
+      }
+    }
+  }
+}
+
+// ---------- Maç akışı ----------
+function clearWorld() {
+  $('emotes').innerHTML = '';
+  for (const p of prints) scene.remove(p.grp);
+  prints.length = 0;
+  for (const r of ribbons) scene.remove(r.m);
+  ribbons.length = 0;
+  for (const f of fighters) { scene.remove(f.view.g); scene.remove(f.bar.g); if (f.emoteSp) scene.remove(f.emoteSp); }
+  for (const p of pickups) scene.remove(p.mesh);
+  fighters = [];
+  pickups = [];
+}
+
+function startMatch(m) {
+  online = false; isHost = true; myId = 'local'; hostId = 'local';
+  clearWorld();
+  buildWorld(Math.floor(Math.random() * 2147483646) + 1);
+  resetChests();
+  mode = m;
+  scores = { blue: 0, red: 0 };
+  remaining = MATCH_TIME;
+  state = 'playing';
+  const n = m === '3v3' ? 3 : 1;
+  const others = Object.keys(BREEDS).filter(k => k !== selectedBreed).sort(() => Math.random() - 0.5);
+  let bi = 0;
+  for (let i = 0; i < n; i++) makeFighter('blue', i === 0, i, i === 0 ? selectedBreed : others[bi++]);
+  for (let i = 0; i < n; i++) makeFighter('red', false, i, others[bi++]);
+  player = fighters[0];
+  for (let i = 0; i < 4; i++) makePickup('energy');
+  for (let i = 0; i < 2; i++) makePickup('heal');
+  buildEmoteBar();
+  $('menu').classList.add('hidden');
+  $('end').classList.add('hidden');
+}
+
+// ---------- Online: sunucu iletişimi, lobi ve maç ----------
+let evt = null, netAcc = 0, netRoom = null;
+function sendNet(type, data, to) {
+  if (!netId) return;
+  const body = JSON.stringify({ id: netId, type, data, to: to && to !== netId ? to : undefined });
+  fetch(netBase + 'send', { method: 'POST', headers: { 'content-type': 'application/json' }, body }).catch(() => {});
+}
+function worldSnapshot() {
+  return {
+    scores, remaining, over: state === 'over',
+    chests: chests.map(o => o.hp),
+    pickups: pickups.map(p => ({ t: p.type, full: !!p.full, x: p.x, z: p.z, a: p.active, tt: p.t }))
+  };
+}
+function netTick(dt) {
+  netAcc += dt;
+  if (netAcc < 0.1) return;
+  netAcc = 0;
+  const mine = fighters.filter(f => f.owner === netId).map(f => ({
+    sid: f.sid, x: f.pos.x, z: f.pos.z, y: f.y, yaw: f.yaw, hp: f.hp, maxHp: f.maxHp, alive: f.alive,
+    atk: f.atkAnim, ab: f.abAnim, walkT: f.walkT, moving: f.moving, vel: f.vel, stun: f.stun, shield: f.shield
+  }));
+  if (mine.length) sendNet('state', mine);
+  if (isHost) sendNet('world', worldSnapshot());
+}
+function applyState(s) {
+  const f = fighters.find(x => x.sid === s.sid);
+  if (!f || f.owner === netId) return;
+  f.pos.x = s.x; f.pos.z = s.z; f.y = s.y; f.yaw = s.yaw;
+  f.hp = s.hp; f.maxHp = s.maxHp; f.alive = s.alive;
+  f.atkAnim = s.atk; f.abAnim = s.ab; f.walkT = s.walkT;
+  f.moving = s.moving; f.vel = s.vel; f.stun = s.stun; f.shield = s.shield || 0;
+  f.view.disc.visible = f.alive;
+}
+function applyWorld(w) {
+  if (isHost) return;
+  scores = { blue: w.scores.blue, red: w.scores.red };
+  remaining = w.remaining;
+  chests.forEach((o, i) => {
+    if (w.chests[i] === undefined) return;
+    o.hp = w.chests[i];
+    o.mesh.visible = o.hp > 0;
+    o.top = o.hp > 0 ? 99 : -10;
+  });
+  if (w.pickups.length !== pickups.length) {
+    for (const p of pickups) scene.remove(p.mesh);
+    pickups.length = 0;
+    for (const q of w.pickups) {
+      const mesh = new THREE.Mesh(
+        q.t === 'energy' ? new THREE.BoxGeometry(0.5, 0.5, 0.5) : new THREE.SphereGeometry(0.6, 14, 10),
+        q.t === 'energy' ? mats.energy : mats.heal
+      );
+      scene.add(mesh);
+      pickups.push({ type: q.t, full: q.full, mesh, active: q.a, t: q.tt, x: q.x, z: q.z });
+    }
+  }
+  pickups.forEach((p, i) => {
+    const q = w.pickups[i];
+    p.x = q.x; p.z = q.z; p.active = q.a; p.t = q.tt;
+    p.mesh.visible = q.a;
+    p.mesh.position.set(q.x, 0.7, q.z);
+  });
+  if (w.over && state === 'playing') endMatch();
+}
+function playEmoteOn(f, emoji) {
+  if (f.emoteSp) scene.remove(f.emoteSp);
+  f.emoteSp = emoteSprite(emoji);
+  f.emoteT = 2.5;
+  scene.add(f.emoteSp);
+}
+function handleNet(m) {
+  switch (m.type) {
+    case 'roster': return onRoster(m);
+    case 'start': return startOnline(m);
+    case 'state': for (const s of m.data) applyState(s); return;
+    case 'world': return applyWorld(m.data);
+    case 'hit': {
+      const f = fighters.find(x => x.sid === m.data.sid && x.owner === netId);
+      if (f) damage(f, m.data.amt, m.data.ux, m.data.uz);
+      return;
+    }
+    case 'chest': {
+      if (!isHost) return;
+      const o = chests[m.data.i];
+      if (o) hitChest(o, m.data.amt);
+      return;
+    }
+    case 'emote': {
+      const f = fighters.find(x => x.sid === m.data.sid);
+      if (f) playEmoteOn(f, m.data.emoji);
+      return;
+    }
+  }
+}
+function onRoster(m) {
+  if (m.started) return;
+  netRoom = m;
+  $('roomCode').textContent = m.code;
+  $('lobbyStart').classList.add('hidden');
+  $('lobbyRoom').classList.remove('hidden');
+  const box = $('roster');
+  box.innerHTML = '';
+  for (const p of m.players) {
+    const d = document.createElement('div');
+    const b = BREEDS[p.breed];
+    d.textContent = (p.id === m.host ? '👑 ' : '') + p.name + ' — ' + (p.team === 'blue' ? 'Mavi' : 'Kırmızı') + ' · ' + (b ? b.name : p.breed);
+    box.appendChild(d);
+  }
+  $('startBtn').classList.toggle('hidden', m.host !== netId);
+  $('lobbyMsg').textContent = m.players.length + ' oyuncu. Eksik kişileri botlar tamamlar.';
+}
+function openEvents(id) {
+  if (evt) evt.close();
+  evt = new EventSource(netBase + 'events?id=' + encodeURIComponent(id));
+  evt.onmessage = e => { try { handleNet(JSON.parse(e.data)); } catch (err) { console.error('net:', err && err.message); } };
+  evt.onerror = () => { $('lobbyMsg').textContent = 'Bağlantı koptu, yeniden bağlanılıyor…'; };
+}
+async function netCall(path, body) {
+  const r = await fetch(netBase + path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || 'Bağlantı hatası');
+  return j;
+}
+function joinedAs(j) {
+  netId = j.id;
+  openEvents(j.id);
+  sendNet('breed', { breed: $('breedSel').value, equip: save.equip });
+}
+for (const k of Object.keys(BREEDS)) {
+  const o = document.createElement('option');
+  o.value = k;
+  o.textContent = BREEDS[k].name;
+  $('breedSel').appendChild(o);
+}
+$('breedSel').value = selectedBreed;
+$('breedSel').addEventListener('change', () => sendNet('breed', { breed: $('breedSel').value, equip: save.equip }));
+$('onlineBtn').addEventListener('click', () => {
+  $('menu').classList.add('hidden');
+  $('lobby').classList.remove('hidden');
+  $('lobbyMsg').textContent = '';
+});
+$('lobbyClose').addEventListener('click', () => {
+  if (!netId) { $('lobby').classList.add('hidden'); $('menu').classList.remove('hidden'); }
+  else { $('lobbyMsg').textContent = 'Önce odadan ayrıl.'; }
+});
+$('createBtn').addEventListener('click', async () => {
+  try { joinedAs(await netCall('create', { name: $('nameIn').value })); }
+  catch (e) { $('lobbyMsg').textContent = e.message; }
+});
+$('joinBtn').addEventListener('click', async () => {
+  try { joinedAs(await netCall('join', { name: $('nameIn').value, code: $('joinCode').value })); }
+  catch (e) { $('lobbyMsg').textContent = e.message; }
+});
+document.querySelectorAll('.teamBtn').forEach(b => b.addEventListener('click', () => sendNet('team', { team: b.dataset.team })));
+$('startBtn').addEventListener('click', () => sendNet('start', {}));
+$('leaveBtn').addEventListener('click', () => {
+  sendNet('leave', {});
+  if (evt) evt.close();
+  evt = null; netId = null; netRoom = null;
+  $('lobbyRoom').classList.add('hidden');
+  $('lobbyStart').classList.remove('hidden');
+  $('lobbyMsg').textContent = '';
+});
+
+function startOnline(m) {
+  online = true;
+  myId = netId;
+  hostId = m.host;
+  isHost = m.host === netId;
+  clearWorld();
+  buildWorld(m.seed);
+  resetChests();
+  mode = '3v3';
+  scores = { blue: 0, red: 0 };
+  remaining = MATCH_TIME;
+  state = 'playing';
+  player = null;
+  for (const s of m.slots) {
+    const human = !s.bot;
+    const mine = human && s.owner === netId;
+    const f = makeFighter(s.team, mine, s.idx, s.breed, human ? (s.equip || {}) : undefined, s.owner, s.sid);
+    f.name = s.name;
+    if (mine) player = f;
+  }
+  if (!player) player = fighters.find(f => !f.remote) || fighters[0];
+  for (let i = 0; i < 4; i++) makePickup('energy');
+  for (let i = 0; i < 2; i++) makePickup('heal');
+  buildEmoteBar();
+  $('menu').classList.add('hidden');
+  $('lobby').classList.add('hidden');
+  $('end').classList.add('hidden');
+}
+
+function endMatch() {
+  state = 'over';
+  let txt = 'Berabere!';
+  let reward = '';
+  if (scores.blue > scores.red) {
+    txt = 'Mavi takım kazandı!';
+    save.gold += WIN_GOLD;
+    persist();
+    reward = ` +${WIN_GOLD} altın`;
+  } else if (scores.red > scores.blue) {
+    txt = 'Kırmızı takım kazandı!';
+  }
+  save.gems += GEM_PER_MATCH;
+  persist();
+  updateWallet();
+  $('endText').textContent = `${txt} ${scores.blue} - ${scores.red}${reward} +${GEM_PER_MATCH} 💎`;
+  $('emotes').innerHTML = '';
+  $('end').classList.remove('hidden');
+}
+
+// ---------- Menü ----------
+function updateWallet() {
+  $('wGold').textContent = save.gold;
+  $('wGems').textContent = save.gems;
+}
+function updateMenu() {
+  updateWallet();
+  $('gold').textContent = `Altın: ${save.gold}`;
+  const b = BREEDS[selectedBreed];
+  $('breedInfo').textContent = `${b.name} — ${b.abil}: ${b.desc}`;
+}
+
+const breedBox = $('breeds');
+for (const key of Object.keys(BREEDS)) {
+  const btn = document.createElement('button');
+  btn.className = 'breed' + (key === selectedBreed ? ' sel' : '');
+  btn.textContent = BREEDS[key].name;
+  btn.dataset.key = key;
+  btn.addEventListener('click', () => {
+    selectedBreed = key;
+    breedBox.querySelectorAll('.breed').forEach(b => b.classList.toggle('sel', b.dataset.key === key));
+    updateMenu();
+  });
+  breedBox.appendChild(btn);
+}
+document.querySelectorAll('.mode[data-mode]').forEach(b => b.addEventListener('click', () => startMatch(b.dataset.mode)));
+$('replay').addEventListener('click', () => startMatch(mode));
+$('toMenu').addEventListener('click', () => {
+  clearWorld();
+  state = 'menu';
+  player = null;
+  $('end').classList.add('hidden');
+  $('menu').classList.remove('hidden');
+  updateMenu();
+});
+
+// ---------- Mağaza: sol tarafta köpek heykeli önizlemesi ----------
+const pvCanvas = $('previewCanvas');
+const pvRenderer = new THREE.WebGLRenderer({ canvas: pvCanvas, antialias: true, alpha: true });
+pvRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+pvRenderer.setSize(240, 300, false);
+const pvScene = new THREE.Scene();
+const pvCam = new THREE.PerspectiveCamera(38, 240 / 300, 0.1, 50);
+pvCam.position.set(0, 2.4, 8.5);
+pvCam.lookAt(0, 1.5, 0);
+pvScene.add(new THREE.HemisphereLight(0xffffff, 0xe8c9a0, 1.0));
+const pvSun = new THREE.DirectionalLight(0xffffff, 0.7);
+pvSun.position.set(4, 8, 5);
+pvScene.add(pvSun);
+{
+  // Heykel kaidesi
+  const pedestal = new THREE.Group();
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(2.6, 2.8, 0.25, 32), toon(0xC9C3B6));
+  base.position.y = 0.125;
+  const top = new THREE.Mesh(new THREE.CylinderGeometry(2.3, 2.45, 0.3, 32), toon(0xDAD5CA));
+  top.position.y = 0.4;
+  pedestal.add(base, top);
+  pvScene.add(pedestal);
+}
+let pvDog = null;
+
+function rebuildPreview() {
+  if (pvDog) pvScene.remove(pvDog.g);
+  const b = BREEDS[selectedBreed];
+  const eq = Object.assign({}, save.equip);
+  if (tryOn) eq[tryOn.type] = tryOn.id;
+  pvDog = buildDog(TEAM.blue, b);
+  pvDog.g.position.y = 0.55;
+  pvDog.disc.visible = false;
+  pvDog.shieldMesh.visible = false;
+  pvDog.rainbow = !!eq.fur;
+  applyCosmetics(pvDog, b, eq);
+  pvScene.add(pvDog.g);
+  $('previewName').textContent = tryOn ? `Deneniyor: ${tryOn.name}` : 'Bir eşyaya tıkla, köpeğinde dene';
+}
+
+function renderShop() {
+  updateWallet();
+  $('shopGold').textContent = `Altın: ${save.gold} · Elmas: ${save.gems} 💎`;
+  const list = $('shopList');
+  list.innerHTML = '';
+  for (const item of SHOP.filter(i => !i.secret || save.owned.includes(i.id))) {
+    const row = document.createElement('div');
+    row.className = 'item';
+    const label = document.createElement('span');
+    label.style.flex = '1';
+    label.innerHTML = `<b>${item.icon} ${item.name}</b> — ${item.price} ${item.cur === 'gem' ? '💎 elmas' : '🐾 altın'}<br><small>${item.desc}</small>`;
+    const btn = document.createElement('button');
+    const owned = save.owned.includes(item.id);
+    const equipped = save.equip[item.type] === item.id;
+    if (!owned) {
+      btn.textContent = 'Satın al';
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const wallet = item.cur === 'gem' ? 'gems' : 'gold';
+        if (save[wallet] < item.price) { $('shopMsg').textContent = item.cur === 'gem' ? 'Yetersiz elmas' : 'Yetersiz altın'; return; }
+        save[wallet] -= item.price;
+        save.owned.push(item.id);
+        persist();
+        renderShop();
+      });
+    } else {
+      if (item.type === 'emote') { btn.textContent = 'Sahip'; btn.disabled = true; btn.classList.add('alt'); }
+      else btn.textContent = equipped ? 'Çıkar' : 'Giy';
+      if (equipped) btn.classList.add('alt');
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        save.equip[item.type] = equipped ? null : item.id;
+        persist();
+        tryOn = null;
+        renderShop();
+      });
+    }
+    // Satıra tıklamak eşyayı köpeğe deneme olarak takar
+    row.addEventListener('click', () => { tryOn = item; renderShop(); });
+    row.append(label, btn);
+    list.appendChild(row);
+  }
+  $('shopMsg').textContent = '';
+  rebuildPreview();
+}
+
+$('shopBtn').addEventListener('click', () => {
+  tryOn = null;
+  $('menu').classList.add('hidden');
+  $('shop').classList.remove('hidden');
+  renderShop();
+});
+$('shopClose').addEventListener('click', () => {
+  $('shop').classList.add('hidden');
+  $('menu').classList.remove('hidden');
+  updateMenu();
+});
+
+// ---------- Girdi ----------
+const joy = $('joy'), knob = $('knob');
+let joyId = null, joyX = 0, joyZ = 0;
+
+function joyMove(e) {
+  const r = joy.getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  let dx = e.clientX - cx, dy = e.clientY - cy;
+  const max = r.width / 2 - 28;
+  const len = Math.hypot(dx, dy);
+  if (len > max) { dx *= max / len; dy *= max / len; }
+  knob.style.transform = `translate(${dx}px,${dy}px)`;
+  joyX = dx / max;
+  joyZ = dy / max;
+}
+
+joy.addEventListener('pointerdown', e => { joyId = e.pointerId; joy.setPointerCapture(e.pointerId); joyMove(e); });
+joy.addEventListener('pointermove', e => { if (e.pointerId === joyId) joyMove(e); });
+const joyEnd = e => {
+  if (e.pointerId !== joyId) return;
+  joyId = null; joyX = 0; joyZ = 0;
+  knob.style.transform = '';
+};
+joy.addEventListener('pointerup', joyEnd);
+joy.addEventListener('pointercancel', joyEnd);
+
+$('btnAtk').addEventListener('pointerdown', e => { e.preventDefault(); atkPressed = true; });
+$('btnAb').addEventListener('pointerdown', e => { e.preventDefault(); abPressed = true; });
+$('btnJump').addEventListener('pointerdown', e => { e.preventDefault(); jumpPressed = true; });
+
+const keys = {};
+addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if (e.code === 'Space') { abPressed = true; e.preventDefault(); }
+  if (e.code === 'ShiftLeft') jumpPressed = true;
+});
+addEventListener('keyup', e => { keys[e.code] = false; });
+renderer.domElement.addEventListener('mousedown', () => { atkPressed = true; });
+
+// Kamera köpeğin arkasında olduğu için joystick de kameraya göre çalışır
+let camYaw = 0;
+function readInput() {
+  const kx = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0);
+  const kz = (keys.KeyS || keys.ArrowDown ? 1 : 0) - (keys.KeyW || keys.ArrowUp ? 1 : 0);
+  let ix = joyX + kx, iz = joyZ + kz;
+  const l = Math.hypot(ix, iz);
+  if (l > 1) { ix /= l; iz /= l; }
+  const s = Math.sin(camYaw), c = Math.cos(camYaw);
+  return { ix: -ix * c - iz * s, iz: ix * s - iz * c };
+}
+
+// ---------- Görünüm, kamera, HUD ----------
+function syncViews(dt) {
+  for (const o of chests) {
+    o.bar.g.visible = o.hp > 0;
+    o.bar.g.position.set(o.x, 2.4, o.z);
+    o.bar.g.lookAt(camera.position);
+    const r = Math.max(0, o.hp / o.maxHp);
+    o.bar.fill.scale.x = Math.max(r, 0.001);
+    o.bar.fill.position.x = -0.8 * (1 - r);
+  }
+  for (const f of fighters) {
+    updateBar(f);
+    if (f.isPlayer && save.equip.fur) f.view.fur.color.setHSL((clock * 0.15) % 1, 0.75, 0.6);
+    if (f.emoteSp) {
+      f.emoteT -= dt;
+      if (f.emoteT <= 0 || !f.alive) { scene.remove(f.emoteSp); f.emoteSp = null; }
+      else f.emoteSp.position.set(f.pos.x, 4.3 + f.y + Math.sin(clock * 4) * 0.1, f.pos.z);
+    }
+    const g = f.view.g;
+    const lunge = f.atkAnim > 0 ? Math.sin(f.atkAnim / 0.3 * Math.PI) * 0.35 : 0;
+    const swim = f.alive && inWater(f);
+    const y = !f.alive ? 0.4 : (swim ? -0.25 + Math.sin(clock * 4 + f.pos.z) * 0.05 : 0) + f.y;
+    g.position.set(f.pos.x + Math.sin(f.yaw) * lunge, y, f.pos.z + Math.cos(f.yaw) * lunge);
+    g.rotation.y = f.yaw;
+    g.rotation.x = f.alive ? 0 : -Math.PI / 2;
+    f.view.shieldMesh.visible = f.shield > 0;
+    f.view.tailPivot.rotation.y = Math.sin(clock * 8 + f.pos.x) * (f.atkAnim > 0 ? 0.9 : 0.25);
+
+    if (f.alive) {
+      if (f.moving) f.walkT += dt * (f.vel > 11 ? 16 : 10);
+      if (f.isPlayer && save.equip.ribbon && f.moving && clock - (f.lastRibbon || 0) > 0.05) {
+        f.lastRibbon = clock;
+        spawnRibbon(f);
+      }
+      if (f.isPlayer && save.equip.trail && f.moving && f.y - groundAt(f) <= 0.05 && clock - (f.lastPrint || 0) > 0.32) {
+        f.lastPrint = clock;
+        f.printSide = -(f.printSide || 1);
+        const tid = save.equip.trail;
+        const pcol = tid === 'rainbowtrail' ? new THREE.Color().setHSL((clock * 0.25) % 1, 0.9, 0.6).getHex() : ITEM[tid].color;
+        spawnPrint(f.pos.x, f.pos.z, f.yaw, f.printSide, pcol);
+      }
+      poseDog(f.view, {
+        walkT: f.walkT,
+        moving: f.moving && !swim,
+        vel: f.vel,
+        airborne: f.y - groundAt(f) > 0.05,
+        atkP: f.atkAnim > 0 ? 1 - f.atkAnim / 0.3 : -1,
+        abP: f.abAnim > 0 ? 1 - f.abAnim / 0.5 : -1,
+        stun: f.stun,
+        clock,
+        breed: f.breedKey
+      });
+    }
+  }
+}
+
+function updateCamera(dt) {
+  const tgt = player ? (player.alive ? player.pos : player.spawn) : ZERO;
+  if (player && player.alive) {
+    let d = player.yaw - camYaw;
+    d = Math.atan2(Math.sin(d), Math.cos(d));
+    camYaw += d * (1 - Math.exp(-6 * dt));
+  }
+  const fx = Math.sin(camYaw), fz = Math.cos(camYaw);
+  const desired = new THREE.Vector3(tgt.x - fx * 14, 7, tgt.z - fz * 14);
+  camera.position.lerp(desired, 1 - Math.exp(-8 * dt));
+  camera.lookAt(tgt.x + fx * 2, 1.2, tgt.z + fz * 2);
+
+  for (const o of obstacles) {
+    if (!o.mesh || !o.standable) continue;
+    let blocks = false;
+    for (let i = 0; i <= 10; i++) {
+      const t = i / 10;
+      const x = camera.position.x + (tgt.x - camera.position.x) * t;
+      const y = camera.position.y + (0.8 - camera.position.y) * t;
+      const z = camera.position.z + (tgt.z - camera.position.z) * t;
+      if (y < o.h && Math.abs(x - o.x) < o.hw + 0.3 && Math.abs(z - o.z) < o.hd + 0.3) { blocks = true; break; }
+    }
+    o.mesh.material.opacity = blocks ? 0.3 : 1;
+  }
+}
+
+function updateHUD() {
+  $('scoreB').textContent = scores.blue;
+  $('scoreR').textContent = scores.red;
+  const m = Math.max(0, Math.floor(remaining / 60));
+  const s = Math.max(0, Math.floor(remaining % 60));
+  $('timer').textContent = `${m}:${String(s).padStart(2, '0')}`;
+  if (player) {
+    const ready = Math.min(1, Math.max(0, 1 - player.abCd / 5)) * 360;
+    $('btnAb').style.background = `conic-gradient(#ffd34d ${ready}deg, #8a8a8a ${ready}deg)`;
+    const showMsg = state === 'playing' && !player.alive;
+    $('msg').style.display = showMsg ? 'block' : 'none';
+    if (showMsg) $('msg').textContent = `Yeniden doğuyor: ${Math.ceil(player.respawn)}`;
+  }
+}
+
+// ---------- Döngü ----------
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min((now - last) / 1000, 0.05);
+  last = now;
+  clock += dt;
+
+  if (state === 'playing' && (!online || isHost)) {
+    remaining -= dt;
+    if (remaining <= 0 || scores.blue >= WIN_SCORE || scores.red >= WIN_SCORE) endMatch();
+  }
+
+  const { ix, iz } = readInput();
+  for (const f of fighters) {
+    f.atkCd = Math.max(0, f.atkCd - dt);
+    f.abCd = Math.max(0, f.abCd - dt);
+    f.atkAnim = Math.max(0, f.atkAnim - dt);
+    f.abAnim = Math.max(0, f.abAnim - dt);
+    if (f.shield > 0) f.shield = Math.max(0, f.shield - dt);
+    if (f.boost > 0) f.boost = Math.max(0, f.boost - dt);
+    if (f.stun > 0) f.stun = Math.max(0, f.stun - dt);
+
+    if (f.remote) continue; // uzak oyuncunun durumu ağdan gelir
+    // Zamanla can dolumu: 3 saniye vuruş almazsan saniyede 200 can
+    if (f.alive && f.hp < f.maxHp && clock - f.lastHit > 3) f.hp = Math.min(f.maxHp, f.hp + 200 * dt);
+
+    if (!f.alive) {
+      f.respawn -= dt;
+      if (f.respawn <= 0 && state === 'playing') revive(f);
+      continue;
+    }
+
+    const ground = groundAt(f);
+    if (f.y > ground || f.vy > 0) {
+      f.vy -= 22 * dt;
+      f.y += f.vy * dt;
+      if (f.y <= ground && f.vy <= 0) { f.y = ground; f.vy = 0; }
+    }
+    // Corgi sıçraması inişte çevresine hasar verir
+    if (f.leap && f.vy === 0 && f.y <= ground) {
+      f.leap = false;
+      area(f, 3.5, Math.round(f.ab * 0.6), 0.5);
+    }
+
+    if (state === 'playing' && f.stun <= 0 && !f.remote) {
+      if (f.isPlayer) {
+        if (jumpPressed) jump(f);
+        if (atkPressed) attack(f);
+        if (abPressed) ability(f);
+        move(f, dt, ix, iz);
+      } else if (!online || isHost) {
+        bot(f, dt);
+      }
+    }
+
+    if (f.dash > 0) {
+      f.dash -= dt;
+      dashHits(f);
+      spawnFire(f);
+    }
+  }
+  atkPressed = false;
+  abPressed = false;
+  jumpPressed = false;
+
+  if (state === 'playing' && (!online || isHost)) updatePickups(dt);
+
+  if (ringT > 0) {
+    ringT -= dt;
+    const k = 1 + (0.3 - ringT) * 4;
+    attackRing.scale.set(k, k, 1);
+    attackRing.material.opacity = Math.max(0, ringT / 0.3);
+  } else {
+    attackRing.visible = false;
+  }
+
+  updateParticles(dt);
+  updatePrints(dt);
+  updateRibbons(dt);
+  if (online) netTick(dt);
+  syncViews(dt);
+  updateCamera(dt);
+  updateHUD();
+  renderer.render(scene, camera);
+
+  // Mağaza önizlemesi: köpek heykeli kaidede yavaşça döner
+  if (pvDog && !$('shop').classList.contains('hidden')) {
+    pvDog.g.rotation.y = 0.5 + Math.sin(clock * 0.6) * 0.45;
+    if (pvDog.rainbow) pvDog.fur.color.setHSL((clock * 0.15) % 1, 0.75, 0.6);
+    poseDog(pvDog, { walkT: 0, moving: false, vel: 0, airborne: false, atkP: -1, abP: -1, stun: 0, clock, breed: selectedBreed });
+    pvRenderer.render(pvScene, pvCam);
+  }
+  requestAnimationFrame(frame);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+buildWorld(12345);
+updateMenu();
+requestAnimationFrame(frame);
+</script>
+<script>if ('serviceWorker' in navigator) { addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {})); }</script>
+</body>
+</html>
